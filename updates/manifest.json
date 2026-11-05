@@ -1,11 +1,12 @@
 {
   "product": "Astra Console",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "channel": "stable",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
   "releaseNotes": [
-    "Parking avec places tracées à côté de l’aéroport",
-    "Interaction E au parking pour voyager à Kokir",
-    "La carte du jeu montre le parking de l’aéroport"
+    "Nouvelle ville ajoutée selon le tracé violet envoyé",
+    "Route sinueuse avec accès par portail à l’emplacement indiqué",
+    "Voyage depuis le parking de l’aéroport et retour possible par E",
+    "Carte agrandie pour inclure la nouvelle ville"
   ]
 }
