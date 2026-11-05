@@ -1,12 +1,11 @@
 {
   "product": "Astra Console",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "channel": "stable",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
   "releaseNotes": [
-    "Nouvelle route sinueuse à l’est reliant l’aéroport à la boucle du sud-est",
-    "Calculatrice retirée",
-    "Mise à jour au démarrage avec confirmation avant téléchargement",
-    "Jeu inclus dans un seul fichier HTML autonome"
+    "Notification et demande de confirmation dès qu’une nouvelle version est publiée",
+    "Vérification de version toutes les 15 secondes pendant qu’Astra est ouvert",
+    "Jeu GFH en un fichier autonome avec la nouvelle route à l’est"
   ]
 }
