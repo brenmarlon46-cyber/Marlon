@@ -1,12 +1,13 @@
 {
   "product": "Astra Console",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "channel": "stable",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
   "releaseNotes": [
-    "Nouvelle ville ajoutée selon le tracé violet envoyé",
-    "Route sinueuse avec accès par portail à l’emplacement indiqué",
-    "Voyage depuis le parking de l’aéroport et retour possible par E",
-    "Carte agrandie pour inclure la nouvelle ville"
+    "Cinq véhicules circulent sur la route de la nouvelle ville",
+    "Voyageurs piétons visibles sur l’accès à l’aéroport",
+    "Arrivée à pied à l’aéroport avec la voiture du joueur garée à proximité",
+    "Barrière d’entrée payante (300 €) et barrière de sortie automatique",
+    "Aéroport, stationnement et maisons ajoutés à la carte"
   ]
 }
