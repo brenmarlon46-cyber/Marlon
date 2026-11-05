@@ -1,11 +1,11 @@
 {
   "product": "Astra Console",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "channel": "stable",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
   "releaseNotes": [
-    "Notification et demande de confirmation dès qu’une nouvelle version est publiée",
-    "Vérification de version toutes les 15 secondes pendant qu’Astra est ouvert",
-    "Jeu GFH en un fichier autonome avec la nouvelle route à l’est"
+    "Parking avec places tracées à côté de l’aéroport",
+    "Interaction E au parking pour voyager à Kokir",
+    "La carte du jeu montre le parking de l’aéroport"
   ]
 }
