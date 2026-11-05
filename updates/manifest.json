@@ -1,13 +1,12 @@
 {
   "product": "Astra Console",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "channel": "stable",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
   "releaseNotes": [
-    "Cinq véhicules circulent sur la route de la nouvelle ville",
-    "Voyageurs piétons visibles sur l’accès à l’aéroport",
-    "Arrivée à pied à l’aéroport avec la voiture du joueur garée à proximité",
-    "Barrière d’entrée payante (300 €) et barrière de sortie automatique",
-    "Aéroport, stationnement et maisons ajoutés à la carte"
+    "Douze véhicules circulent en continu sur la route de la nouvelle ville",
+    "Route des maisons prolongée et raccordée à la route principale",
+    "Point de voyage violet déplacé près de l’aéroport pour rejoindre Hotiral",
+    "Barrières renforcées avec poteaux, feux et panneaux visibles"
   ]
 }
