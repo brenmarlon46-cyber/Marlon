@@ -1,11 +1,11 @@
 {
   "product": "Astra Console",
-  "version": "1.1.0",
-  "package": "astra-console-v1.1.0.zip",
-  "channel": "local",
+  "version": "1.2.0",
+  "channel": "stable",
+  "download": "https://brenmarlon46-cyber.github.io/Marlon/Astra-Console.html",
   "releaseNotes": [
-    "Interface console et navigation à la manette",
-    "Grand Fast Horizon et bibliothèque graphique locale",
-    "Applications et réglages enregistrés localement"
+    "Console en un seul fichier HTML autonome",
+    "Calculatrice retirée",
+    "Vérification de mises à jour au démarrage avec confirmation avant téléchargement"
   ]
 }
