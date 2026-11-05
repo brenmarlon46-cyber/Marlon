@@ -96,7 +96,10 @@ const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a);
 const GRID=80,LIM=1900,CITY_EDGE=320,MAXV=42,EUR_PER_M=10;            // Extension à l’est pour la nouvelle ville
 const NEW_CITY_ROUTE=[[1728,493],[1734,530],[1724,564],[1698,588],[1660,599],[1620,602],[1593,616],[1574,647],[1565,691],[1563,735],[1572,768],[1603,791],[1640,808],[1662,821],[1654,832],[1628,843],[1590,850],[1567,864],[1562,880],[1587,895],[1625,910],[1653,929],[1651,947],[1630,963],[1598,979],[1564,993],[1530,1000],[1490,1001],[1450,996],[1415,984],[1385,966],[1368,945],[1362,918],[1362,888],[1358,860],[1350,835],[1348,808],[1350,786]];
-const NEW_CITY_PORTAL={x:1350,z:786}, AIRPORT_RETURN={x:465,z:-305};
+const NEW_CITY_PORTAL={x:1350,z:786}, AIRPORT_RETURN={x:485,z:-308};
+const NEW_AIRPORT={arrival:{x:1165,z:742},car:{x:1203,z:779},entry:{x:1235,z:686},exit:{x:1291,z:752}};
+const NEW_CITY_ACCESS=[[1228,676],[1242,695],[1265,715],[1288,737],[1315,761],[1350,786]];
+const NEW_CITY_HOMES=[[1480,802],[1500,770],[1522,820],[1543,786],[1564,839],[1585,803],[1510,842]];
 const AIRPORT={x:575,z:-585,w:450,d:450};
 const EAST_ROUTES=[[[320,320],[320,400],[320,525],[338,585],[385,615],[485,620],[585,620],[675,610],[710,580],[710,470],[720,400],[720,320]],[[320,-320],[335,-350],[355,-378],[385,-402],[420,-420],[455,-440]],[[540,-360],[540,-285],[565,-260],[615,-242],[690,-228],[775,-210],[805,-205],[780,-175],[745,-155],[700,-143],[660,-126],[620,-105],[585,-78],[560,-45],[548,-10],[555,18],[585,38],[620,55],[655,76],[685,103],[708,138],[718,180],[720,230],[720,320],[720,400],[722,440]]];
 const HOME={x:-40,z:-40,mx:-40,mz:-24},STORE={x:40,z:40,mx:40,mz:28},DEALERS=[{x:120,z:-40,mx:120,mz:-24},{x:-120,z:120,mx:-120,mz:136},{x:200,z:-200,mx:200,mz:-184}],
@@ -104,7 +107,7 @@ GARAGES=[{x:-20,z:-44,cars:[]},{x:-200,z:-40,cars:[]},{x:200,z:40,cars:[]},{x:-4
 const MODELS=[{n:'Citadine',c:0x36b56f,p:4500,t:35,style:'compact'},{n:'SUV',c:0x4267a8,p:8500,t:39,style:'suv'},{n:'Rallye',c:0xee6633,p:12000,t:49,style:'rally'},{n:'Sportive',c:0xffd700,p:15000,t:52,style:'sport'},{n:'Muscle car',c:0x9d45bf,p:22000,t:50,style:'muscle'},{n:'Hypercar',c:0xff00ff,p:50000,t:64,style:'sport'}];
 const P={x:0,z:10,health:100,cash:25000,stars:0,veh:null,speed:0,heading:0,mesh:null};
 const JOB={x:80,z:-120},INTERIOR={x:700,z:700};let deliveryTarget=null,insideBuilding=null,weatherState='clear',weatherClock=210,rainField=null,rainPositions=null,busRideOrigin=null;
-let scene,camera,renderer,clock,sun,starsPts,G={},structs=[],bots=[],pol=[],owned=[],pedestrians=[],townDoors=[],townBuses=[],townBusStops=[],camPitch=.35,camDist=5,lookOff=0,lookT=0,lookCur=0,mapOn=false,race=null,offerT=0,offerN='';
+let scene,camera,renderer,clock,sun,starsPts,G={},structs=[],bots=[],pol=[],owned=[],pedestrians=[],airportTravelers=[],airportGates=[],airportCar=null,townDoors=[],townBuses=[],townBusStops=[],camPitch=.35,camDist=5,lookOff=0,lookT=0,lookCur=0,mapOn=false,race=null,offerT=0,offerN='';
 let gameActive=false,isPaused=false,isDead=false,gameMode='libre',stage=0,camYaw=Math.PI,K={};
 let fpsLimit=60,botTarget=20,quality='ultra',lastDraw=0,frames=0,lastFps=performance.now(),mmTick=0,parkingFloor=0;
 let crashCD=0,hitCD=0,heistCD=0,limCD=0,spawnCD=0,loseT=0,saveT=0,flash=0,autoGear=1,gearShiftTimer=0,gearShiftCut=0,busRouteOpen=false,routeBus=null;
@@ -278,7 +281,9 @@ function animatePedestrians(dt){
     const swing=Math.sin(a)*.48*(p.wait===0?1:0);
     const l=p.mesh.userData.limbs;l[0].rotation.x=swing;l[1].rotation.x=-swing;l[2].rotation.x=-swing*.65;l[3].rotation.x=swing*.65;
   }
+  animateAirportTravelers(dt);
 }
+function animateAirportTravelers(dt){for(const p of airportTravelers){if(p.wait>0){p.wait-=dt;if(p.wait<=0){p.progress=1;scene.add(p.mesh);}else continue;}p.progress-=p.speed*dt/p.curve.getLength();if(p.progress<=0){p.progress=0;p.wait=8+Math.random()*5;scene.remove(p.mesh);continue;}const at=p.curve.getPointAt(p.progress),tan=p.curve.getTangentAt(p.progress);p.mesh.position.set(at.x,.02,at.z);p.mesh.rotation.y=Math.atan2(-tan.x,-tan.z);p.mesh.userData.phase+=dt*8;const limbs=p.mesh.userData.limbs;limbs[0].rotation.x=Math.sin(p.mesh.userData.phase)*.48;limbs[1].rotation.x=-limbs[0].rotation.x;limbs[2].rotation.x=-limbs[0].rotation.x*.65;limbs[3].rotation.x=-limbs[2].rotation.x;}}
 
 /* ---------- Véhicules ---------- */
 function makeCar(color,police,style='sedan'){
@@ -343,6 +348,7 @@ function animateBots(dt){
   for(const b of bots){if(b.isBus||b.parked||b.mine)continue;
     if(b.stun>0){b.stun-=dt;b.v=0;setBrakeLights(b.mesh,true);continue;}
     if(b.turn){animateBotTurn(b,dt);continue;}
+    if(b.routeCurve){b.v+=(b.max-b.v)*Math.min(1,dt*1.8);b.routeProgress=(b.routeProgress+b.v*dt/b.routeLength)%1;const at=b.routeCurve.getPointAt(b.routeProgress),tan=b.routeCurve.getTangentAt(b.routeProgress);b.mesh.position.set(at.x,0,at.z);b.mesh.rotation.y=Math.atan2(tan.x,tan.z);setBrakeLights(b.mesh,false);continue;}
     let target=blockedAhead(b)?0:b.max;target=Math.min(target,lightCap(b));if(!b.highway&&b.axis==='x'&&Math.abs(b.t+280)<24&&Math.abs(b.road-Math.round(b.road/GRID)*GRID)<7)target=Math.min(target,8.5);setBrakeLights(b.mesh,b.v>target+.12);b.v+=(target-b.v)*Math.min(1,dt*2.5);
     const pt=b.t;
     if(b.highway){const exit=b.dir<0?-680:-320,hDist=(exit-pt)*b.dir,key='highway:'+exit;if(hDist>=0&&hDist<6&&b.turnDecision!==key&&lightCap(b)>1){b.turnDecision=key;if(Math.random()<.38){beginBotTurn(b,exit);b.turn.meta.highway=false;continue;}}}
@@ -502,6 +508,11 @@ function drawMap(c,S,vx,vz,H){ // vue centrée sur (vx,vz) de demi-largeur H (mi
   c.strokeStyle='#55575f';c.lineWidth=Math.max(3,30*s);c.beginPath();c.moveTo(X(-323),Y(-80));c.lineTo(X(-650),Y(-80));c.stroke();c.strokeStyle='#3a3a46';c.lineWidth=Math.max(2,14*s);c.beginPath();c.moveTo(X(-650),Y(-80));c.lineTo(X(-680),Y(-80));c.stroke();c.strokeStyle='#e8e8e8';c.lineWidth=Math.max(1,1.5*s);c.beginPath();c.moveTo(X(-323),Y(-94));c.lineTo(X(-650),Y(-94));c.moveTo(X(-323),Y(-66));c.lineTo(X(-650),Y(-66));c.stroke();
   EAST_ROUTES.forEach((route,i)=>{c.strokeStyle=i===0?'#62646c':'#50535b';c.lineWidth=Math.max(2,(i===0?15:13)*s);c.lineCap='round';c.lineJoin='round';c.beginPath();route.forEach(([x,z],n)=>n?c.lineTo(X(x),Y(z)):c.moveTo(X(x),Y(z)));c.stroke();});
   c.strokeStyle='#55575f';c.lineWidth=Math.max(3,18*s);c.lineCap='round';c.lineJoin='round';c.beginPath();NEW_CITY_ROUTE.forEach(([x,z],i)=>i?c.lineTo(X(x),Y(z)):c.moveTo(X(x),Y(z)));c.stroke();
+  c.fillStyle='#262d36';c.fillRect(X(980),Y(635),300*s,198*s);c.strokeStyle='#8b949e';c.lineWidth=Math.max(1,2*s);c.strokeRect(X(980),Y(635),300*s,198*s);
+  c.fillStyle='#171b21';c.fillRect(X(1000),Y(642),72*s,184*s);c.strokeStyle='#e7e8e9';c.lineWidth=Math.max(1,s);c.strokeRect(X(1000),Y(642),72*s,184*s);c.beginPath();c.moveTo(X(1036),Y(647));c.lineTo(X(1036),Y(820));c.stroke();
+  c.strokeStyle='#dfe3e6';c.lineWidth=Math.max(1,s);for(let z=700;z<815;z+=17){c.beginPath();c.moveTo(X(1196),Y(z));c.lineTo(X(1250),Y(z));c.stroke();}
+  c.strokeStyle='#787c83';c.lineWidth=Math.max(3,12*s);c.lineCap='round';c.beginPath();NEW_CITY_ACCESS.forEach(([x,z],i)=>i?c.lineTo(X(x),Y(z)):c.moveTo(X(x),Y(z)));c.stroke();
+  c.fillStyle='#53545a';NEW_CITY_HOMES.forEach(([x,z])=>c.fillRect(X(x-6),Y(z-6),12*s,12*s));
   c.fillStyle='#242a32';c.fillRect(X(AIRPORT.x-AIRPORT.w/2),Y(AIRPORT.z-AIRPORT.d/2),AIRPORT.w*s,AIRPORT.d*s);c.strokeStyle='#aeb4bd';c.lineWidth=Math.max(1,2*s);c.strokeRect(X(AIRPORT.x-AIRPORT.w/2),Y(AIRPORT.z-AIRPORT.d/2),AIRPORT.w*s,AIRPORT.d*s);c.fillStyle='#11151b';c.fillRect(X(410),Y(-721),350*s,42*s);c.strokeStyle='#e6e8ec';c.lineWidth=Math.max(1,s);c.strokeRect(X(410),Y(-721),350*s,42*s);c.strokeStyle='#74767d';c.lineWidth=Math.max(2,14*s);c.lineCap='round';c.lineJoin='round';c.beginPath();[[320,-320],[335,-350],[355,-378],[385,-402],[420,-420],[455,-440]].forEach(([x,z],i)=>i?c.lineTo(X(x),Y(z)):c.moveTo(X(x),Y(z)));c.stroke();
   c.fillStyle='#454950';c.fillRect(X(387),Y(-346),156*s,82*s);c.strokeStyle='#e0e1e2';c.lineWidth=Math.max(1,s);for(let i=0;i<9;i++){const px=X(397+i*17.2);c.beginPath();c.moveTo(px,Y(-338));c.lineTo(px,Y(-272));c.stroke();}
   c.fillStyle='#262631';for(const o of structs)if(o.hx>=5&&o.hx===o.hz)c.fillRect(X(o.x-o.hx),Y(o.z-o.hz),o.hx*2*s,o.hz*2*s);
@@ -513,7 +524,7 @@ function drawMap(c,S,vx,vz,H){ // vue centrée sur (vx,vz) de demi-largeur H (mi
     GARAGES.forEach((g,i)=>{if(i!==0)drawIcon(c,'garageGray',X(g.x),Y(g.z),ir);});DEALERS.forEach(d=>drawIcon(c,'dealer',X(d.mx),Y(d.mz),ir));townBusStops.forEach(b=>dot(b.x,b.z,'#39d5ff',4));
     bots.forEach(b=>dot(b.mesh.position.x,b.mesh.position.z,b.isBus?'#27c5e8':'#777',b.isBus?3:1.5));pol.forEach(p=>dot(p.x,p.z,'#3366ff',3));
     if(big){c.font='13px Arial';c.textAlign='center';c.fillStyle='#d8dbe0';
-      [['Aéroport',AIRPORT.x,AIRPORT.z],['Parking avion',465,-305],['Nouvelle ville',NEW_CITY_PORTAL.x,NEW_CITY_PORTAL.z],['Maison',HOME.mx,HOME.mz],['Magasin',STORE.mx,STORE.mz],['Commissariat',120,200],['Rivière',-280,-200],['Hotiral',0,0],['Kokir',200,200],['Autoroute',-345,-80],['Faret',-740,-80],['Dépôt bus',224,40],['Contrats',JOB.x,JOB.z],...townBusStops.map(b=>['Arrêt bus '+b.line,b.x,b.z]),...GARAGES.filter((g,i)=>i!==0).map(g=>['Garage',g.x,g.z]),...DEALERS.map(d=>['Concession.',d.mx,d.mz]),...PARKS.map(p=>['Parc',p.x,p.z])].forEach(([t,x,z])=>c.fillText(t,X(x),Y(z)+ir+12));}
+      [['Aéroport',AIRPORT.x,AIRPORT.z],['Aéroport · nouvelle ville',1160,720],['Parking avion',465,-305],['Nouvelle ville',NEW_CITY_PORTAL.x,NEW_CITY_PORTAL.z],['Maison',HOME.mx,HOME.mz],['Magasin',STORE.mx,STORE.mz],['Commissariat',120,200],['Rivière',-280,-200],['Hotiral',0,0],['Kokir',200,200],['Autoroute',-345,-80],['Faret',-740,-80],['Dépôt bus',224,40],['Contrats',JOB.x,JOB.z],...townBusStops.map(b=>['Arrêt bus '+b.line,b.x,b.z]),...GARAGES.filter((g,i)=>i!==0).map(g=>['Garage',g.x,g.z]),...DEALERS.map(d=>['Concession.',d.mx,d.mz]),...PARKS.map(p=>['Parc',p.x,p.z])].forEach(([t,x,z])=>c.fillText(t,X(x),Y(z)+ir+12));}
   }
   if(WP&&!busRouteMapMode){const route=buildGpsRoute(),wx=X(WP.x),wy=Y(WP.z),m=8*f,cx=clamp(wx,m,S-m),cy=clamp(wy,m,S-m);
     c.strokeStyle='#ffd400';c.lineWidth=Math.max(2,2.5*f);c.lineCap='round';c.lineJoin='round';c.beginPath();route.points.forEach(([rx,rz],i)=>{if(i===0)c.moveTo(X(rx),Y(rz));else c.lineTo(X(rx),Y(rz));});c.stroke();
@@ -671,7 +682,7 @@ function animateDoors(dt){const k=Math.min(1,dt*5),h=HOME.door;h.pivot.rotation.
     }
     const dd=Math.hypot(P.x-g.x,P.z-(g.z+14.5)),inside=Math.abs(P.x-g.x)<6.5&&Math.abs(P.z-g.z)<14.5;
     if(!g.door.open&&dd<9)setDoor(g.door,true,1);else if(g.door.open&&dd>14&&!inside)setDoor(g.door,false,1);
-    const m=g.door.mesh,sc=m.scale.y+((g.door.open?.06:1)-m.scale.y)*k;m.scale.y=sc;m.position.y=5-2.5*sc;});}
+    const m=g.door.mesh,sc=m.scale.y+((g.door.open?.06:1)-m.scale.y)*k;m.scale.y=sc;m.position.y=5-2.5*sc;});animateAirportGates(dt);}
 function heist(){if(heistCD>0)return notify('Caisse vide, reviens dans '+Math.ceil(heistCD)+' s.');
   P.cash+=1000;heistCD=90;setStars(Math.min(P.stars+2,5));notify('Braquage réussi ! +1 000 € (alerte police)');missionDone(1);}
 function sleep(){if(frozen)return;if(P.stars>0)return notify('Impossible de dormir : la police te recherche.');
@@ -686,7 +697,7 @@ function interactList(){
   GARAGES.filter(g=>g.parking).forEach(g=>{
     L.push({x:g.x,z:g.entryZ,r:8,label:()=>g.entryOpen?'Passer la barrière d’entrée':'Entrer au parking (300 €)',run:()=>openParkingEntry(g)});
   });
-  L.push({x:535,z:-292,r:15,label:()=>'Voyager — parking de l’aéroport',run:travelToNewCity});L.push({x:NEW_CITY_PORTAL.x,z:NEW_CITY_PORTAL.z,r:12,label:()=>'Retourner à l’aéroport',run:travelToAirport});L.push({x:JOB.x,z:JOB.z,r:6,label:()=>deliveryTarget?'Livraison en cours':'Prendre un contrat de livraison',run:startDelivery});DEALERS.forEach(d=>L.push({x:d.mx,z:d.mz,r:6,label:()=>MODELS.some(m=>!owned.includes(m.n))?'Acheter une voiture':'Améliorer la voiture (en voiture)',run:buy}));townBusStops.forEach(stop=>L.push({x:stop.x,z:stop.z,r:7,foot:1,label:()=>{const waiting=townBuses.find(b=>b.status==='waiting'&&b.requestedStop===stop);const arriving=townBuses.some(b=>b.status==='called'&&b.requestedStop===stop);if(waiting)return'Monter dans le bus (E)';if(arriving){const q=townBuses.find(b=>b.status==='called'&&b.requestedStop===stop),sec=q?Math.ceil((Math.abs(q.mesh.position.x-stop.busX)+Math.abs(q.mesh.position.z-stop.busZ))/17):0;return'Bus en route · '+sec+' s';}return'Appeler un bus (200 €)';},run:()=>{const waiting=townBuses.find(b=>b.status==='waiting'&&b.requestedStop===stop);if(waiting)return boardBus(waiting);if(townBuses.some(b=>b.status==='called'&&b.requestedStop===stop))return notify('Le bus est en route.');return callBus(stop);}}));townDoors.forEach(d=>L.push({x:d.col.x,z:d.col.z+1,r:5,label:()=>d.open?'Entrer dans '+(d.business||d.city):'Ouvrir la porte — '+(d.business||d.city),run:()=>{if(!d.open){setDoor(d,true);return;}enterBuilding(d);}}));return L;}
+  airportGates.filter(g=>g.role==='entry').forEach(g=>L.push({x:g.x,z:g.z,r:8,label:()=>g.open?'Entrer dans l’aéroport':'Entrer dans l’aéroport · 300 €',run:()=>payAirportEntry(g)}));L.push({x:500,z:-292,r:8,label:()=>'Prendre l’avion pour la nouvelle ville',run:travelToNewCity});L.push({x:NEW_AIRPORT.arrival.x,z:NEW_AIRPORT.arrival.z,r:9,foot:1,label:()=>'Prendre l’avion vers Hotiral',run:travelToAirport});L.push({x:NEW_CITY_PORTAL.x,z:NEW_CITY_PORTAL.z,r:12,label:()=>'Retourner à l’aéroport',run:travelToAirport});L.push({x:JOB.x,z:JOB.z,r:6,label:()=>deliveryTarget?'Livraison en cours':'Prendre un contrat de livraison',run:startDelivery});DEALERS.forEach(d=>L.push({x:d.mx,z:d.mz,r:6,label:()=>MODELS.some(m=>!owned.includes(m.n))?'Acheter une voiture':'Améliorer la voiture (en voiture)',run:buy}));townBusStops.forEach(stop=>L.push({x:stop.x,z:stop.z,r:7,foot:1,label:()=>{const waiting=townBuses.find(b=>b.status==='waiting'&&b.requestedStop===stop);const arriving=townBuses.some(b=>b.status==='called'&&b.requestedStop===stop);if(waiting)return'Monter dans le bus (E)';if(arriving){const q=townBuses.find(b=>b.status==='called'&&b.requestedStop===stop),sec=q?Math.ceil((Math.abs(q.mesh.position.x-stop.busX)+Math.abs(q.mesh.position.z-stop.busZ))/17):0;return'Bus en route · '+sec+' s';}return'Appeler un bus (200 €)';},run:()=>{const waiting=townBuses.find(b=>b.status==='waiting'&&b.requestedStop===stop);if(waiting)return boardBus(waiting);if(townBuses.some(b=>b.status==='called'&&b.requestedStop===stop))return notify('Le bus est en route.');return callBus(stop);}}));townDoors.forEach(d=>L.push({x:d.col.x,z:d.col.z+1,r:5,label:()=>d.open?'Entrer dans '+(d.business||d.city):'Ouvrir la porte — '+(d.business||d.city),run:()=>{if(!d.open){setDoor(d,true);return;}enterBuilding(d);}}));return L;}
 function nearestInteract(){IL=IL||interactList();let best=null,bd=1e9;
   for(const o of IL){if(o.foot&&P.veh)continue;const d=Math.hypot(P.x-o.x,P.z-o.z);if(d<o.r&&d<bd){bd=d;best=o;}}return best;}
 function updatePrompt(){const it=(isDead||mapOn||frozen)?null:nearestInteract(),t=it?'E — '+it.label():'';
@@ -952,14 +963,46 @@ function buildAirportParking(){
   const aisle=new THREE.Mesh(new THREE.BoxGeometry(155,.018,23),new THREE.MeshBasicMaterial({color:0x50545b}));aisle.position.set(465,.12,-305);scene.add(aisle);
   const cv=document.createElement('canvas');cv.width=512;cv.height=128;const q=cv.getContext('2d');q.fillStyle='#163b57';q.fillRect(0,0,512,128);q.strokeStyle='#d9f3ff';q.lineWidth=7;q.strokeRect(5,5,502,118);q.fillStyle='#fff';q.font='bold 42px Arial';q.textAlign='center';q.textBaseline='middle';q.fillText('PARKING · NOUVELLE VILLE',256,64);
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(14,3.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),side:THREE.DoubleSide}));sign.position.set(535,4,-292);scene.add(sign);structs.push({x:535,z:-292,hx:7,hz:.3});
+  makeAirportGate(545,-305,'x',26,'entry',1);makeAirportGate(465,-348,'x',24,'exit',1);
 }
+function makeAirportGate(x,z,axis,width,role,insideSign=1){
+  const pivot=new THREE.Group(),stripeMats=[new THREE.MeshStandardMaterial({color:0xe8e8e8,roughness:.45}),new THREE.MeshStandardMaterial({color:0xd92727,roughness:.45})];let col;
+  if(axis==='x'){pivot.position.set(x-width/2,.9,z);for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(width/8,.35,.28),stripeMats[i%2]);m.position.set(width/2+(i-3.5)*width/8,0,0);pivot.add(m);}col={x,z,hx:width/2,hz:.7};}
+  else{pivot.position.set(x,.9,z-width/2);for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.28,.35,width/8),stripeMats[i%2]);m.position.set(0,0,width/2+(i-3.5)*width/8);pivot.add(m);}col={x,z,hx:.7,hz:width/2};}
+  scene.add(pivot);structs.push(col);const gate={x,z,axis,width,role,insideSign,pivot,col,open:false};airportGates.push(gate);return gate;
+}
+function setAirportGate(g,open){if(!g||g.open===open)return;g.open=open;const i=structs.indexOf(g.col);if(open&&i>=0)structs.splice(i,1);if(!open&&i<0)structs.push(g.col);IL=null;}
+function payAirportEntry(g){if(P.cash<300)return notify('Il te faut 300 € pour entrer dans le parking de l’aéroport.');P.cash-=300;setAirportGate(g,true);notify('Barrière ouverte · -300 €.');autoSave();}
+function animateAirportGates(dt){const k=Math.min(1,dt*4);for(const g of airportGates){const d=Math.hypot(P.x-g.x,P.z-g.z);if(g.role==='exit'&&!g.open&&d<10){const inside=g.axis==='x'?P.z>g.z+1:g.axis==='z'?P.x<g.x-1:false;if(inside)setAirportGate(g,true);}if(g.open&&d>(g.role==='entry'?15:18))setAirportGate(g,false);const target=g.open?(g.axis==='x'?-Math.PI/2:Math.PI/2):0;if(g.axis==='x')g.pivot.rotation.z+=(target-g.pivot.rotation.z)*k;else g.pivot.rotation.x+=(target-g.pivot.rotation.x)*k;}}
+function parkTravelCar(x,z,heading){let b=P.veh||(airportCar&&bots.includes(airportCar)?airportCar:starter);P.veh=null;P.speed=0;P.mesh.visible=true;if(!b)return;GARAGES.forEach(g=>g.cars=g.cars.filter(c=>c!==b));b.mine=false;b.parked=true;b.v=0;b.axis='x';b.road=z;b.t=x;b.dir=1;b.mesh.position.set(x,.25,z);b.mesh.rotation.y=heading;airportCar=b;}
 function teleportPlayer(x,z,heading,message){P.x=x;P.z=z;P.speed=0;P.heading=heading;if(P.veh){const b=P.veh;b.v=0;b.axis='x';b.road=z;b.t=x;b.dir=1;b.mesh.position.set(x,.25,z);b.mesh.rotation.y=heading;}P.mesh.position.set(x,0,z);P.mesh.visible=!P.veh;parkingFloor=0;camYaw=heading;lookOff=0;lookCur=0;WP=null;IL=null;notify(message);autoSave();}
-function travelToNewCity(){teleportPlayer(NEW_CITY_PORTAL.x,NEW_CITY_PORTAL.z,0,'Bienvenue dans la nouvelle ville.');}
-function travelToAirport(){teleportPlayer(AIRPORT_RETURN.x,AIRPORT_RETURN.z,Math.PI,'Retour au parking de l’aéroport.');}
+function travelToNewCity(){parkTravelCar(NEW_AIRPORT.car.x,NEW_AIRPORT.car.z,Math.PI);teleportPlayer(NEW_AIRPORT.arrival.x,NEW_AIRPORT.arrival.z,Math.PI/2,'Tu arrives à l’aéroport à pied. Ta voiture t’attend au parking.');}
+function travelToAirport(){parkTravelCar(AIRPORT_RETURN.x,-330,Math.PI);teleportPlayer(500,-305,Math.PI,'Retour à l’aéroport de Hotiral, à pied. Ta voiture t’attend au parking.');}
 function buildNewCity(){
   const curve=addCurvedRoad(NEW_CITY_ROUTE,18,0x34363c),center=new THREE.MeshBasicMaterial({color:0xd8d8d3});for(let d=20;d<curve.getLength()-10;d+=36){const p=curve.getPointAt(d/curve.getLength()),t=curve.getTangentAt(d/curve.getLength()),dash=new THREE.Mesh(new THREE.BoxGeometry(4,.035,.32),center);dash.position.copy(p);dash.rotation.y=-Math.atan2(t.z,t.x);scene.add(dash);}
+  buildNewAirport();
+  const access=addCurvedRoad(NEW_CITY_ACCESS,13,0x3a3c42);for(let i=0;i<5;i++){const walker=makePedestrian(30+i),progress=1-(i+.5)/5,at=access.getPointAt(progress);walker.position.set(at.x,.02,at.z);walker.rotation.y=Math.PI;scene.add(walker);airportTravelers.push({mesh:walker,curve:access,progress,speed:1.1+(i%3)*.18,wait:i*.6});}
+  buildNewCityHomes();
   const ring=new THREE.Mesh(new THREE.TorusGeometry(5,.55,12,40),new THREE.MeshStandardMaterial({color:0x6b2cc4,emissive:0x421a9d,emissiveIntensity:1.6,metalness:.3}));ring.rotation.x=Math.PI/2;ring.position.set(NEW_CITY_PORTAL.x,.45,NEW_CITY_PORTAL.z);scene.add(ring);
   const beacon=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,7,12),new THREE.MeshBasicMaterial({color:0x8246e8,transparent:true,opacity:.85}));beacon.position.set(NEW_CITY_PORTAL.x,3.8,NEW_CITY_PORTAL.z);scene.add(beacon);
+  const route=curve;for(let i=0;i<5;i++){const color=[0xd9534f,0x3f82bc,0xe0bd42,0xdedede,0x52a873][i],b={axis:'x',road:0,dir:1,t:0,v:12+i*1.3,max:13+i*1.4,stun:0,color,parked:false,mine:false,routeCurve:route,routeLength:route.getLength(),routeProgress:i/5};b.mesh=makeCar(color);const p=route.getPointAt(b.routeProgress),t=route.getTangentAt(b.routeProgress);b.mesh.position.set(p.x,0,p.z);b.mesh.rotation.y=Math.atan2(t.x,t.z);bots.push(b);}
+}
+function buildNewCityHomes(){
+  addCurvedRoad([[1442,768],[1482,784],[1524,800],[1568,816],[1605,827]],7,0x303239);
+  const colors=[0x8d7666,0xb8a17b,0x758996,0xa66f62,0x989078,0x82977f,0xb48765];
+  NEW_CITY_HOMES.forEach(([x,z],i)=>{const h=9+(i%3)*1.2,body=new THREE.Mesh(new THREE.BoxGeometry(13,h,13),new THREE.MeshStandardMaterial({color:colors[i],roughness:.9}));body.position.set(x,h/2,z);body.castShadow=true;scene.add(body);const roof=new THREE.Mesh(new THREE.ConeGeometry(9,5,4),new THREE.MeshStandardMaterial({color:[0x483d3a,0x37434a,0x554536][i%3],roughness:1}));roof.position.set(x,h+2.3,z);roof.rotation.y=Math.PI/4;scene.add(roof);structs.push({x,z,hx:7,hz:7});const door=makeDoor(x-1,z+7.05);door.city='Nouvelle ville';door.business='Maison';townDoors.push(door);});
+}
+function buildNewAirport(){
+  const tarmac=new THREE.Mesh(new THREE.BoxGeometry(300,.09,198),new THREE.MeshStandardMaterial({color:0x363b42,roughness:.96}));tarmac.position.set(1130,.045,734);scene.add(tarmac);
+  const runway=new THREE.Mesh(new THREE.BoxGeometry(68,.12,184),new THREE.MeshStandardMaterial({color:0x20242b,roughness:.97}));runway.position.set(1036,.12,734);scene.add(runway);
+  const paint=new THREE.MeshBasicMaterial({color:0xe7e9eb});for(const x of[1003,1069]){const edge=new THREE.Mesh(new THREE.BoxGeometry(.45,.025,170),paint);edge.position.set(x,.19,734);scene.add(edge);}for(let z=657;z<814;z+=22){const d=new THREE.Mesh(new THREE.BoxGeometry(.55,.03,9),paint);d.position.set(1036,.2,z);scene.add(d);}
+  const taxi=new THREE.Mesh(new THREE.BoxGeometry(28,.08,95),new THREE.MeshStandardMaterial({color:0x51565d,roughness:.9}));taxi.position.set(1090,.1,734);scene.add(taxi);
+  const terminal=new THREE.Mesh(new THREE.BoxGeometry(66,12,48),new THREE.MeshStandardMaterial({color:0x66717b,roughness:.75}));terminal.position.set(1162,6,713);scene.add(terminal);structs.push({x:1162,z:713,hx:33,hz:24});
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(70,1.5,52),new THREE.MeshStandardMaterial({color:0x26313a,roughness:.7}));roof.position.set(1162,12.8,713);scene.add(roof);const glass=new THREE.MeshStandardMaterial({color:0x58a8c1,metalness:.12,roughness:.25});for(let i=0;i<6;i++){const w=new THREE.Mesh(new THREE.BoxGeometry(.15,6,5.5),glass);w.position.set(1129+i*13,7,737.1);scene.add(w);}
+  const apron=new THREE.Mesh(new THREE.BoxGeometry(98,.06,92),new THREE.MeshStandardMaterial({color:0x454a51,roughness:.95}));apron.position.set(1210,.08,770);scene.add(apron);const line=new THREE.MeshBasicMaterial({color:0xe8e8e5});for(let i=0;i<5;i++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.22,.03,22),line);stripe.position.set(1184+i*11,.13,779);scene.add(stripe);}
+  const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=128;const q=signCanvas.getContext('2d');q.fillStyle='#12334b';q.fillRect(0,0,512,128);q.strokeStyle='#d9f3ff';q.lineWidth=7;q.strokeRect(5,5,502,118);q.fillStyle='#fff';q.font='bold 42px Arial';q.textAlign='center';q.textBaseline='middle';q.fillText('AÉROPORT · NOUVELLE VILLE',256,64);const sign=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(signCanvas),side:THREE.DoubleSide}));sign.position.set(1162,8,739);scene.add(sign);
+  const planeMat=new THREE.MeshStandardMaterial({color:0xe2e6e8,metalness:.15,roughness:.45}),plane=new THREE.Group(),fuselage=new THREE.Mesh(new THREE.CylinderGeometry(.65,.8,12,10),planeMat),wings=new THREE.Mesh(new THREE.BoxGeometry(16,.22,2.5),planeMat);fuselage.rotation.x=Math.PI/2;fuselage.rotation.y=Math.PI/2;fuselage.position.y=1.8;plane.add(fuselage);wings.position.y=1.8;plane.add(wings);plane.position.set(1088,0,700);plane.rotation.y=Math.PI/2;scene.add(plane);
+  makeAirportGate(NEW_AIRPORT.entry.x,NEW_AIRPORT.entry.z,'x',24,'entry',1);makeAirportGate(NEW_AIRPORT.exit.x,NEW_AIRPORT.exit.z,'z',20,'exit',1);
 }
 
 function buildHighway(){
