@@ -12,6 +12,16 @@ Site de lancement pour Astra Console. Ouvrir `index.html` après publication ave
 3. Ouvre `updates/manifest.json` et augmente `version` (ex. `1.9.0` → `2.0.0`) en ajoutant une ligne dans `releaseNotes`.
 4. Les consoles déjà installées voient alors « Nouvelle mise à jour Astra Console X.Y.Z disponible » et téléchargent `Astra-Console.html` depuis le dépôt.
 
+## Le dossier `updates/` (pour mettre à jour les autres appareils)
+
+- `updates/manifest.json` — version courante, notes de version et liens de téléchargement lus par l'application « Mise à jour ».
+- `updates/astra-console-v1.9.0.zip` — la console complète en paquet : `index.html`, `Astra-Console.html`, `betrock.html`, `game.html`, `three.min.js`, `manifest.json`, `updates/manifest.json`, `LISEZ-MOI.txt`, `Lancer-Astra-Console.bat`.
+- `astra-console-v1.1.0.zip` — ancien paquet, conservé.
+
+Pour un autre appareil : télécharge le ZIP, décompresse-le dans un dossier « Astra Console », double-clique sur `Lancer-Astra-Console.bat` (ou ouvre `index.html`). Aucune installation, aucune connexion nécessaire.
+
+Pour publier une nouvelle version : modifie `Astra-Console.html` et `index.html`, refais un ZIP nommé `astra-console-vX.Y.Z.zip` dans `updates/`, mets à jour `updates/manifest.json` (`version`, `package`, `packageUrl`, `releaseNotes`) et le `manifest.json` de la racine.
+
 ## Jeux disponibles
 
 - **Grand Fast Horizon** — le jeu de conduite intégré à la console.
