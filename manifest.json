@@ -7,12 +7,11 @@
   "packageUrl": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/updates/astra-console-v1.13.0.zip",
   "releaseNotes": [
     "Nouveau jeu : Betrock (monde de blocs a explorer, casser et construire)",
-    "Betrock dans la grille Applications, sur l’accueil et dans le dossier Jeux",
+    "Jeux presentes en carrousel de grandes jaquettes, sans icone au-dessus du titre",
+    "Betrock en plein ecran depuis la console, demarrage direct dans le monde",
+    "Manette prise en charge dans tous les jeux (Betrock et Grand Fast Horizon)",
+    "Mise a jour : une seule installation, jamais de retour a une version ancienne",
     "Betrock fonctionne hors ligne avec three.min.js",
-    "Bouton Reprendre de Betrock corrige (pause)",
-    "Douze vehicules circulent en continu sur la route de la nouvelle ville",
-    "Route des maisons prolongee et raccordee a la route principale",
-    "Point de voyage violet deplace pres de l’aeroport pour rejoindre Hotiral",
-    "Barrieres renforcees avec poteaux, feux et panneaux visibles"
+    "Douze vehicules circulent en continu sur la route de la nouvelle ville"
   ]
 }
