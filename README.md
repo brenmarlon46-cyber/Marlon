@@ -12,6 +12,27 @@ Site de lancement pour Astra Console. Ouvrir `index.html` après publication ave
 3. Ouvre `updates/manifest.json` et augmente `version` (ex. `1.13.0` → `1.14.0`) en ajoutant une ligne dans `releaseNotes`.
 4. Les consoles déjà installées voient alors « Nouvelle mise à jour Astra Console X.Y.Z disponible » et téléchargent `Astra-Console.html` depuis le dépôt.
 
+## Jeux et manette
+
+Les deux jeux intégrés répondent à la manette (Xbox / PlayStation, USB ou Bluetooth) :
+
+| Action | Betrock | Grand Fast Horizon |
+|---|---|---|
+| Se déplacer | stick gauche | stick gauche (z/s) / croix |
+| Viser / caméra | stick droit | stick droit |
+| Casser / valider | A | A (menu : lancer la partie) |
+| Poser | X | X (changer de véhicule) |
+| Bloc suivant / carte | Y | Y (carte) |
+| Pause | Start / Select | Start / Select |
+| Interagir | — | B |
+
+## Mises à jour : une seule fois, jamais de retour en arrière
+
+- La console retient la version installée (`localStorage : astra-version`). Une mise à jour déjà faite n'est jamais reproposée ni retéléchargée.
+- Si le dépôt propose une version **plus ancienne**, elle est ignorée.
+- Le fichier de mise à jour n'est accepté que depuis le dépôt GitHub officiel (`raw.githubusercontent.com/brenmarlon46-cyber/Marlon` ou `brenmarlon46-cyber.github.io/Marlon`) : un fichier modifié ailleurs est refusé.
+- L'application s'appelle « Mise à jour (une seule fois) » et son bouton se désactive quand la version installée est plus récente.
+
 ## Le dossier `updates/` (pour mettre à jour les autres appareils)
 
 - `updates/manifest.json` — version courante, notes de version et liens de téléchargement lus par l'application « Mise à jour ».
