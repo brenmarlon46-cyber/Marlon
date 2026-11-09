@@ -51,6 +51,12 @@ input{font:inherit;font-size:22px;width:min(340px,80vw);padding:10px 14px;border
 </head>
 <body>
 
+<div id="erreurThree" class="ecran" style="background:#1d2a1a">
+  <h2>3D indisponible</h2>
+  <p style="max-width:460px;text-align:center">Le fichier <b>three.min.js</b> est introuvable à côté de betrock.html et aucun accès Internet n’a permis de le charger.</p>
+  <p style="max-width:460px;text-align:center">Garde <b>betrock.html</b> et <b>three.min.js</b> dans le même dossier, puis recharge la page.</p>
+</div>
+
 <div id="chargement" class="ecran">
   <h1>BETROCK</h1>
   <div class="barre"><i id="remplissage"></i></div>
@@ -93,8 +99,23 @@ input{font:inherit;font-size:22px;width:min(340px,80vw);padding:10px 14px;border
 </div>
 <div id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-  onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';document.head.appendChild(s)"></script>
+<!-- Three.js : fichier local three.min.js à côté du HTML (hors ligne), sinon CDN -->
+<script src="three.min.js"></script>
+<script>
+if(typeof THREE === 'undefined'){
+  var cdns = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'];
+  cdns.forEach(function(u){
+    var sc = document.createElement('script');
+    sc.src = u;
+    if(u.indexOf('jsdelivr') > 0) sc.onerror = function(){
+      var e = document.getElementById('erreurThree');
+      if(e) e.style.display = 'flex';
+    };
+    document.head.appendChild(sc);
+  });
+}
+</script>
 <script>
 const $ = id => document.getElementById(id);
 const pause = () => new Promise(r => setTimeout(r, 0));
