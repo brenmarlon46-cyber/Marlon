@@ -1,4 +1,4 @@
-ASTRA CONSOLE 1.9.0 — paquet de mise a jour
+ASTRA CONSOLE 1.13.0 — paquet de mise a jour
 
 DEMARRER
 Double-clique sur « Lancer-Astra-Console.bat » ou ouvre « index.html » avec Microsoft Edge ou Google Chrome.
@@ -8,6 +8,7 @@ CE QUE CONTIENT LE DOSSIER
 index.html            la console (interface, applications, jeux)
 Astra-Console.html    la meme console, c'est ce fichier que le bouton « Telecharger la console » recupere
 betrock.html          le jeu Betrock (monde de blocs)
+                          (a garder dans le meme dossier que three.min.js)
 game.html             Grand Fast Horizon (jeu de conduite)
 three.min.js          bibliotheque 3D utilisee hors ligne
 manifest.json         infos de cette version
@@ -23,14 +24,14 @@ NOUVEAU DANS CETTE VERSION
 MISE A JOUR
 1. Sur le depot GitHub (brenmarlon46-cyber/Marlon), depose les fichiers modifies :
    Astra-Console.html ET index.html (les deux, identiques), plus betrock.html ou three.min.js si besoin.
-2. Ouvre updates/manifest.json et augmente « version » (ex. 1.9.0 -> 2.0.0),
+2. Ouvre updates/manifest.json et augmente « version » (ex. 1.13.0 -> 1.14.0),
    ajoute une ligne dans « releaseNotes », puis depose ce fichier.
 3. Les consoles installees voient alors « Nouvelle mise a jour Astra Console X.Y.Z disponible »
    et telechargent Astra-Console.html depuis le depot.
 4. Pour un appareil sans Internet : decompresse le ZIP de la version dans le dossier Astra Console
    en remplacant les anciens fichiers, puis relance la console.
 
-ASTRA-CONSOLE-1.9.0.ZIP
+ASTRA-CONSOLE-1.13.0.ZIP
 C'est exactement le contenu de ce dossier compresse : copie-le sur une cle USB ou un autre appareil,
 decompresse-le et ouvre index.html. Rien n'est a installer.
 
