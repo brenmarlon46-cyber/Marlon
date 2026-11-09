@@ -1,0 +1,44 @@
+ASTRA CONSOLE 1.9.0 — paquet de mise a jour
+
+DEMARRER
+Double-clique sur « Lancer-Astra-Console.bat » ou ouvre « index.html » avec Microsoft Edge ou Google Chrome.
+Pour jouer a Betrock tout seul : ouvre « betrock.html » (garde-le dans le meme dossier que three.min.js).
+
+CE QUE CONTIENT LE DOSSIER
+index.html            la console (interface, applications, jeux)
+Astra-Console.html    la meme console, c'est ce fichier que le bouton « Telecharger la console » recupere
+betrock.html          le jeu Betrock (monde de blocs)
+game.html             Grand Fast Horizon (jeu de conduite)
+three.min.js          bibliotheque 3D utilisee hors ligne
+manifest.json         infos de cette version
+updates/manifest.json les notes de version lues par l'application « Mise a jour »
+LISEZ-MOI.txt         ce fichier
+Lancer-Astra-Console.bat  ouvre la console sous Windows
+
+NOUVEAU DANS CETTE VERSION
+- Nouveau jeu : Betrock (monde de blocs a explorer, casser et construire)
+- Betrock dans la grille Applications, sur l'accueil (section Jeux) et dans le dossier Jeux de l'explorateur
+- Betrock fonctionne hors ligne grace a three.min.js fourni dans le paquet
+
+MISE A JOUR
+1. Sur le depot GitHub (brenmarlon46-cyber/Marlon), depose les fichiers modifies :
+   Astra-Console.html ET index.html (les deux, identiques), plus betrock.html ou three.min.js si besoin.
+2. Ouvre updates/manifest.json et augmente « version » (ex. 1.9.0 -> 2.0.0),
+   ajoute une ligne dans « releaseNotes », puis depose ce fichier.
+3. Les consoles installees voient alors « Nouvelle mise a jour Astra Console X.Y.Z disponible »
+   et telechargent Astra-Console.html depuis le depot.
+4. Pour un appareil sans Internet : decompresse le ZIP de la version dans le dossier Astra Console
+   en remplacant les anciens fichiers, puis relance la console.
+
+ASTRA-CONSOLE-1.9.0.ZIP
+C'est exactement le contenu de ce dossier compresse : copie-le sur une cle USB ou un autre appareil,
+decompresse-le et ouvre index.html. Rien n'est a installer.
+
+COMMANDES
+- Console : fleches pour naviguer, Entree pour ouvrir, Echap pour revenir (manette : croix, A, B).
+- Betrock : souris pour viser, ZQSD pour marcher, clic gauche casser, clic droit poser,
+  1-5 pour choisir un bloc, Echap pour la pause.
+- Grand Fast Horizon : touches affichees dans le jeu.
+
+Astra Console est une interface locale qui tourne dans Edge ou Chrome. Elle ne remplace pas Windows
+et ne modifie pas le demarrage du PC.
