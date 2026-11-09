@@ -666,185 +666,40 @@ function pauseJeu(){
   afficher('pause');
 }
 
-
 /* ---------- Manette : tous les jeux de la console en profitent ---------- */
-const PAD={lancer:false,pres:{},axes:[0,0,0,0],dernier:0};
+const PADB={lancer:false,pres:{},axes:[0,0,0,0],dernier:0};
 function padBouton(i){const p=(navigator.getGamepads?.()||[])[0];return !!(p&&p.buttons[i]&&p.buttons[i].pressed)}
-function padAppui(nom,i,fn){const on=padBouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on}
+function padAppui(nom,i,fn){const on=padBouton(i);if(on&&!PADB.pres[nom]){try{fn()}catch(e){}}PADB.pres[nom]=on}
 function padViser(dx,dy){
-  const o=camera?.position;if(!o)return;
-  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  const pas=.055;
-  yaw-=dx*pas; pitch-=dy*pas; pitch=Math.max(-1.5,Math.min(1.5,pitch));
+  if(!camera)return;
+  yaw-=dx*.055; pitch=Math.max(-1.5,Math.min(1.5,pitch-dy*.055));
   placerCamera();
   if(document.pointerLockElement)return;
-  const d=new THREE.Vector3();camera.getWorldDirection(d);
   cible=viser();
   contour.visible=!!cible;
   if(cible)contour.position.set(cible.x+.5,cible.y+.5,cible.z+.5);
 }
 function boucleManette(){
-  const pads=navigator.getGamepads?.()||[];const p=pads[0];
+  const p=(navigator.getGamepads?.()||[])[0];
   if(!p){requestAnimationFrame(boucleManette);return}
-  if(!PAD.lancer){PAD.lancer=true;message('Manette connectée : stick pour viser, A casser, X poser, B pause, Y inventaire.');}
+  if(!PADB.lancer){PADB.lancer=true;message('Manette connectee : stick pour viser, A casser, X poser, B pause, Y bloc suivant.');}
   if(enJeu){
-    padAppui('pause',9,()=>pauseJeu());                 // Start / Options
-    padAppui('pause2',8,()=>pauseJeu());                // Select / Share
+    padAppui('pause',9,()=>pauseJeu());
+    padAppui('pause2',8,()=>pauseJeu());
     if(!document.pointerLockElement && !$('pause').classList.contains('actif')){
-      // stick droit (ou gauche) pour viser
       const rx=p.axes[2]||0, ry=p.axes[3]||0;
       if(Math.abs(rx)>.16||Math.abs(ry)>.16) padViser(rx,ry);
       const lx=p.axes[0]||0, ly=p.axes[1]||0;
       if(Math.abs(lx)>.2||Math.abs(ly)>.2){
         touches['q']=lx<-.2; touches['d']=lx>.2; touches['z']=ly<-.2; touches['s']=ly>.2;
       }else{touches['q']=touches['d']=touches['z']=touches['s']=false}
-      if(padBouton(0)) casser();                       // A
-      if(padBouton(2)) poser();                        // X
-      if(padBouton(3)){slot=(slot+1)%SLOTS.length;majHud()}   // Y : bloc suivant
+      if(padBouton(0)) casser();
+      if(padBouton(2)) poser();
+      if(padBouton(3)){slot=(slot+1)%SLOTS.length;majHud()}
       if(padBouton(4)||padBouton(6)){slot=(slot+1)%SLOTS.length;majHud()}
       if(padBouton(5)||padBouton(7)){slot=(slot+SLOTS.length-1)%SLOTS.length;majHud()}
     }
-    if(padBouton(1)){                                   // B : pause
-      if(!PAD.pres.b){pauseJeu()}PAD.pres.b=true;
-    }else PAD.pres.b=false;
-  }
-  requestAnimationFrame(boucleManette);
-}
-requestAnimationFrame(boucleManette);
-
-
-/* ---------- Manette : tous les jeux de la console en profitent ---------- */
-const PAD={lancer:false,pres:{},axes:[0,0,0,0],dernier:0};
-function padBouton(i){const p=(navigator.getGamepads?.()||[])[0];return !!(p&&p.buttons[i]&&p.buttons[i].pressed)}
-function padAppui(nom,i,fn){const on=padBouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on}
-function padViser(dx,dy){
-  const o=camera?.position;if(!o)return;
-  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  const pas=.055;
-  yaw-=dx*pas; pitch-=dy*pas; pitch=Math.max(-1.5,Math.min(1.5,pitch));
-  placerCamera();
-  if(document.pointerLockElement)return;
-  const d=new THREE.Vector3();camera.getWorldDirection(d);
-  cible=viser();
-  contour.visible=!!cible;
-  if(cible)contour.position.set(cible.x+.5,cible.y+.5,cible.z+.5);
-}
-function boucleManette(){
-  const pads=navigator.getGamepads?.()||[];const p=pads[0];
-  if(!p){requestAnimationFrame(boucleManette);return}
-  if(!PAD.lancer){PAD.lancer=true;message('Manette connectée : stick pour viser, A casser, X poser, B pause, Y inventaire.');}
-  if(enJeu){
-    padAppui('pause',9,()=>pauseJeu());                 // Start / Options
-    padAppui('pause2',8,()=>pauseJeu());                // Select / Share
-    if(!document.pointerLockElement && !$('pause').classList.contains('actif')){
-      // stick droit (ou gauche) pour viser
-      const rx=p.axes[2]||0, ry=p.axes[3]||0;
-      if(Math.abs(rx)>.16||Math.abs(ry)>.16) padViser(rx,ry);
-      const lx=p.axes[0]||0, ly=p.axes[1]||0;
-      if(Math.abs(lx)>.2||Math.abs(ly)>.2){
-        touches['q']=lx<-.2; touches['d']=lx>.2; touches['z']=ly<-.2; touches['s']=ly>.2;
-      }else{touches['q']=touches['d']=touches['z']=touches['s']=false}
-      if(padBouton(0)) casser();                       // A
-      if(padBouton(2)) poser();                        // X
-      if(padBouton(3)){slot=(slot+1)%SLOTS.length;majHud()}   // Y : bloc suivant
-      if(padBouton(4)||padBouton(6)){slot=(slot+1)%SLOTS.length;majHud()}
-      if(padBouton(5)||padBouton(7)){slot=(slot+SLOTS.length-1)%SLOTS.length;majHud()}
-    }
-    if(padBouton(1)){                                   // B : pause
-      if(!PAD.pres.b){pauseJeu()}PAD.pres.b=true;
-    }else PAD.pres.b=false;
-  }
-  requestAnimationFrame(boucleManette);
-}
-requestAnimationFrame(boucleManette);
-
-
-/* ---------- Manette : tous les jeux de la console en profitent ---------- */
-const PAD={lancer:false,pres:{},axes:[0,0,0,0],dernier:0};
-function padBouton(i){const p=(navigator.getGamepads?.()||[])[0];return !!(p&&p.buttons[i]&&p.buttons[i].pressed)}
-function padAppui(nom,i,fn){const on=padBouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on}
-function padViser(dx,dy){
-  const o=camera?.position;if(!o)return;
-  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  const pas=.055;
-  yaw-=dx*pas; pitch-=dy*pas; pitch=Math.max(-1.5,Math.min(1.5,pitch));
-  placerCamera();
-  if(document.pointerLockElement)return;
-  const d=new THREE.Vector3();camera.getWorldDirection(d);
-  cible=viser();
-  contour.visible=!!cible;
-  if(cible)contour.position.set(cible.x+.5,cible.y+.5,cible.z+.5);
-}
-function boucleManette(){
-  const pads=navigator.getGamepads?.()||[];const p=pads[0];
-  if(!p){requestAnimationFrame(boucleManette);return}
-  if(!PAD.lancer){PAD.lancer=true;message('Manette connectée : stick pour viser, A casser, X poser, B pause, Y inventaire.');}
-  if(enJeu){
-    padAppui('pause',9,()=>pauseJeu());                 // Start / Options
-    padAppui('pause2',8,()=>pauseJeu());                // Select / Share
-    if(!document.pointerLockElement && !$('pause').classList.contains('actif')){
-      // stick droit (ou gauche) pour viser
-      const rx=p.axes[2]||0, ry=p.axes[3]||0;
-      if(Math.abs(rx)>.16||Math.abs(ry)>.16) padViser(rx,ry);
-      const lx=p.axes[0]||0, ly=p.axes[1]||0;
-      if(Math.abs(lx)>.2||Math.abs(ly)>.2){
-        touches['q']=lx<-.2; touches['d']=lx>.2; touches['z']=ly<-.2; touches['s']=ly>.2;
-      }else{touches['q']=touches['d']=touches['z']=touches['s']=false}
-      if(padBouton(0)) casser();                       // A
-      if(padBouton(2)) poser();                        // X
-      if(padBouton(3)){slot=(slot+1)%SLOTS.length;majHud()}   // Y : bloc suivant
-      if(padBouton(4)||padBouton(6)){slot=(slot+1)%SLOTS.length;majHud()}
-      if(padBouton(5)||padBouton(7)){slot=(slot+SLOTS.length-1)%SLOTS.length;majHud()}
-    }
-    if(padBouton(1)){                                   // B : pause
-      if(!PAD.pres.b){pauseJeu()}PAD.pres.b=true;
-    }else PAD.pres.b=false;
-  }
-  requestAnimationFrame(boucleManette);
-}
-requestAnimationFrame(boucleManette);
-
-
-/* ---------- Manette : tous les jeux de la console en profitent ---------- */
-const PAD={lancer:false,pres:{},axes:[0,0,0,0],dernier:0};
-function padBouton(i){const p=(navigator.getGamepads?.()||[])[0];return !!(p&&p.buttons[i]&&p.buttons[i].pressed)}
-function padAppui(nom,i,fn){const on=padBouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on}
-function padViser(dx,dy){
-  const o=camera?.position;if(!o)return;
-  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  const pas=.055;
-  yaw-=dx*pas; pitch-=dy*pas; pitch=Math.max(-1.5,Math.min(1.5,pitch));
-  placerCamera();
-  if(document.pointerLockElement)return;
-  const d=new THREE.Vector3();camera.getWorldDirection(d);
-  cible=viser();
-  contour.visible=!!cible;
-  if(cible)contour.position.set(cible.x+.5,cible.y+.5,cible.z+.5);
-}
-function boucleManette(){
-  const pads=navigator.getGamepads?.()||[];const p=pads[0];
-  if(!p){requestAnimationFrame(boucleManette);return}
-  if(!PAD.lancer){PAD.lancer=true;message('Manette connectée : stick pour viser, A casser, X poser, B pause, Y inventaire.');}
-  if(enJeu){
-    padAppui('pause',9,()=>pauseJeu());                 // Start / Options
-    padAppui('pause2',8,()=>pauseJeu());                // Select / Share
-    if(!document.pointerLockElement && !$('pause').classList.contains('actif')){
-      // stick droit (ou gauche) pour viser
-      const rx=p.axes[2]||0, ry=p.axes[3]||0;
-      if(Math.abs(rx)>.16||Math.abs(ry)>.16) padViser(rx,ry);
-      const lx=p.axes[0]||0, ly=p.axes[1]||0;
-      if(Math.abs(lx)>.2||Math.abs(ly)>.2){
-        touches['q']=lx<-.2; touches['d']=lx>.2; touches['z']=ly<-.2; touches['s']=ly>.2;
-      }else{touches['q']=touches['d']=touches['z']=touches['s']=false}
-      if(padBouton(0)) casser();                       // A
-      if(padBouton(2)) poser();                        // X
-      if(padBouton(3)){slot=(slot+1)%SLOTS.length;majHud()}   // Y : bloc suivant
-      if(padBouton(4)||padBouton(6)){slot=(slot+1)%SLOTS.length;majHud()}
-      if(padBouton(5)||padBouton(7)){slot=(slot+SLOTS.length-1)%SLOTS.length;majHud()}
-    }
-    if(padBouton(1)){                                   // B : pause
-      if(!PAD.pres.b){pauseJeu()}PAD.pres.b=true;
-    }else PAD.pres.b=false;
+    if(padBouton(1)){if(!PADB.pres.b)pauseJeu();PADB.pres.b=true}else PADB.pres.b=false;
   }
   requestAnimationFrame(boucleManette);
 }
