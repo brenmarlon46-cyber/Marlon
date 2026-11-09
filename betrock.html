@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Betrock</title>
+<style>
+:root{--herbe:#5fae2f;--terre:#7a4e2d;--ciel:#8ecbff;--nuit:#1d2a1a;--creme:#f4ffe0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--nuit);font-family:"Trebuchet MS","Segoe UI",sans-serif;color:var(--creme)}
+canvas{display:block}
+.ecran{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;z-index:10;padding:16px}
+.ecran.actif{display:flex}
+h1{margin:0;font-size:clamp(48px,11vw,120px);font-weight:900;letter-spacing:.06em;text-shadow:0 .06em 0 #000,0 .12em 0 rgba(0,0,0,.35)}
+h2{margin:0;font-size:40px;text-shadow:0 4px 0 #000}
+h3{margin:0;font-size:22px;text-shadow:0 2px 0 #000}
+p{margin:0}
+.fond{background:linear-gradient(var(--ciel) 0 58%,var(--herbe) 58% 64%,var(--terre) 64%)}
+#chargement,#generation{background:var(--nuit)}
+.barre{width:min(340px,80vw);height:20px;border:4px solid var(--creme);padding:2px}
+.barre i{display:block;height:100%;width:0;background:var(--herbe)}
+#lobby h1{color:#fff}
+.erreur{max-width:420px;text-align:center;font-weight:700;color:#fff;background:#a22;padding:0 12px;display:none}
+#pause{background:rgba(10,20,8,.65)}
+button{font:inherit;font-size:22px;font-weight:700;min-width:280px;max-width:90vw;padding:12px 26px;color:#fff;background:#6b6b6b;border:4px solid #000;border-bottom-width:8px;cursor:pointer}
+button:hover{background:#7d9a4a}
+button:active{border-bottom-width:4px;transform:translateY(4px)}
+button:focus-visible,input:focus-visible{outline:4px solid #fff;outline-offset:2px}
+input{font:inherit;font-size:22px;width:min(340px,80vw);padding:10px 14px;border:4px solid #000;background:#fff;color:#111}
+#liste{display:flex;flex-direction:column;gap:10px;max-height:28vh;overflow-y:auto;align-items:center;text-shadow:0 2px 0 #000}
+#liste button{font-size:18px;padding:8px 18px}
+#viseur{position:fixed;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;pointer-events:none;display:none;z-index:5}
+#viseur:before,#viseur:after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
+#viseur:before{left:10px;top:0;width:2px;height:22px}
+#viseur:after{top:10px;left:0;height:2px;width:22px}
+
+/* interface de jeu : barre de vie juste au-dessus de l’inventaire */
+#hud{position:fixed;left:0;right:0;bottom:14px;display:none;flex-direction:column;align-items:center;gap:10px;pointer-events:none;z-index:6}
+#vie{position:relative;width:min(300px,80vw);height:24px;border:4px solid #000;background:#3a1212}
+#vieRemp{display:block;height:100%;width:100%;background:#d62e2e;transition:width .25s}
+#vieTxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000}
+#objets{display:flex;gap:6px}
+.case{position:relative;width:58px;height:58px;border:4px solid #000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
+.case.sel{border-color:#fff;background:rgba(255,255,255,.2)}
+.case b{display:block;width:30px;height:30px;border:2px solid rgba(0,0,0,.6)}
+.case .n{position:absolute;right:3px;bottom:1px;font-size:15px;font-weight:700;text-shadow:0 1px 2px #000}
+.case .k{position:absolute;left:4px;top:1px;font-size:11px;font-weight:700;opacity:.8}
+.case.vide b{opacity:.35}
+#toast{position:fixed;left:50%;top:18%;transform:translateX(-50%);padding:8px 16px;background:rgba(0,0,0,.7);font-weight:700;display:none;z-index:6;pointer-events:none;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="chargement" class="ecran">
+  <h1>BETROCK</h1>
+  <div class="barre"><i id="remplissage"></i></div>
+  <p>Chargement…</p>
+</div>
+
+<div id="lobby" class="ecran fond">
+  <h1>BETROCK</h1>
+  <button id="btnJouer">Jouer</button>
+</div>
+
+<div id="parties" class="ecran fond">
+  <h2>Nouvelle partie</h2>
+  <input id="nomPartie" maxlength="24" placeholder="Nom de la partie" autocomplete="off">
+  <button id="btnCreer">Créer la partie</button>
+  <p id="erreurNom" class="erreur"></p>
+  <h3>Parties sauvegardées</h3>
+  <div id="liste"></div>
+  <button id="btnRetour">Retour</button>
+</div>
+
+<div id="generation" class="ecran">
+  <h2>Création du monde</h2>
+  <div class="barre"><i id="remplissageGen"></i></div>
+  <p id="texteGen">Préparation…</p>
+</div>
+
+<div id="pause" class="ecran">
+  <h2>Pause</h2>
+  <p id="msgSauve"></p>
+  <button id="btnReprendre">Reprendre</button>
+  <button id="btnLobby">Retourner au lobby</button>
+</div>
+
+<div id="viseur"></div>
+
+<div id="hud">
+  <div id="vie"><i id="vieRemp"></i><span id="vieTxt"></span></div>
+  <div id="objets"></div>
+</div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+  onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';document.head.appendChild(s)"></script>
+<script>
+const $ = id => document.getElementById(id);
+const pause = () => new Promise(r => setTimeout(r, 0));
+function afficher(id){
+  document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+  if(id) $(id).classList.add('actif');
+}
+function erreurNom(msg){
+  $('erreurNom').textContent = msg;
+  $('erreurNom').style.display = msg ? 'block' : 'none';
+}
+let tToast;
+function message(txt){
+  $('toast').textContent = txt;
+  $('toast').style.display = 'block';
+  clearTimeout(tToast);
+  tToast = setTimeout(() => $('toast').style.display = 'none', 3500);
+}
+
+/* ---------- Écran de chargement ---------- */
+let progression = 0;
+afficher('chargement');
+const timer = setInterval(() => {
+  progression = Math.min(100, progression + 4 + Math.random() * 10);
+  $('remplissage').style.width = progression + '%';
+  if(progression >= 100){
+    clearInterval(timer);
+    setTimeout(() => afficher('lobby'), 400);
+  }
+}, 160);
+
+/* ---------- Sauvegardes ---------- */
+function lireParties(){
+  try{ return JSON.parse(localStorage.getItem('betrock:parties') || '{}'); }
+  catch(e){ return {}; }
+}
+function ecrireParties(p){
+  try{ localStorage.setItem('betrock:parties', JSON.stringify(p)); }
+  catch(e){}
+}
+function remplirListe(){
+  const p = lireParties(), noms = Object.keys(p), liste = $('liste');
+  liste.innerHTML = '';
+  if(!noms.length){ liste.textContent = 'Aucune partie pour le moment.'; return; }
+  noms.sort((a, b) => p[b].date - p[a].date).forEach(n => {
+    const b = document.createElement('button');
+    b.textContent = n + ' — ' + new Date(p[n].date).toLocaleDateString('fr-FR');
+    b.onclick = () => lancerPartie(n, p[n]);
+    liste.appendChild(b);
+  });
+}
+
+/* ---------- Monde ---------- */
+const TAILLE = 100, HAUT = 24;
+const T = {AIR:0, HERBE:1, TERRE:2, PIERRE:3, EAU:4, BOIS:5, FEUILLE:6};
+const COULEURS = [0, 0x5fae2f, 0x7a4e2d, 0x8a8a8a, 0x2f6fd8, 0x6b4a2a, 0x2f8a2a];
+const NOMS = {1:'Herbe', 2:'Terre', 3:'Pierre', 5:'Bois', 6:'Feuilles'};
+let blocs, hauteurs, tronc, nbBlocs, modifs;
+const idx = (x, y, z) => (x*TAILLE + z) * HAUT + y;
+function bloc(x, y, z){
+  if(y < 0) return T.PIERRE;
+  if(x < 0 || z < 0 || x >= TAILLE || z >= TAILLE || y >= HAUT) return T.AIR;
+  return blocs[idx(x, y, z)];
+}
+const plein = (x, y, z) => { const b = bloc(x, y, z); return b !== T.AIR && b !== T.EAU; };
+
+function hash(x, z, s){
+  let h = Math.imul(x, 374761393) + Math.imul(z, 668265263) + Math.imul(s, 1274126177);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+const lisse = t => t*t*(3 - 2*t);
+function bruit(x, z, s){
+  const ix = Math.floor(x), iz = Math.floor(z), fx = lisse(x - ix), fz = lisse(z - iz);
+  const a = hash(ix, iz, s), b = hash(ix+1, iz, s), c = hash(ix, iz+1, s), d = hash(ix+1, iz+1, s);
+  return a + (b - a)*fx + (c - a)*fz + (a - b - c + d)*fx*fz;
+}
+
+function progres(p, texte){
+  $('remplissageGen').style.width = Math.round(p * 100) + '%';
+  if(texte) $('texteGen').textContent = texte;
+}
+
+async function genererMonde(s){
+  blocs = new Uint8Array(TAILLE * TAILLE * HAUT);
+  hauteurs = new Uint8Array(TAILLE * TAILLE);
+  tronc = new Uint8Array(TAILLE * TAILLE);
+  const dist = new Float32Array(TAILLE * TAILLE);
+  const ph = [hash(1, 1, s) * 6.28, hash(2, 2, s) * 6.28];
+
+  // terrain, rivières et tous les blocs en dessous
+  for(let x0 = 0; x0 < TAILLE; x0 += 10){
+    for(let x = x0; x < x0 + 10; x++){
+      for(let z = 0; z < TAILLE; z++){
+        let h = Math.floor(8 + bruit(x/18, z/18, s)*6 + bruit(x/8, z/8, s+1)*1.5);
+        let e = 99;
+        for(let k = 0; k < 2; k++){
+          const c = TAILLE*(.25 + .5*k) + 10*Math.sin(z*.06 + ph[k]);
+          const w = 2.2 + .8*Math.sin(z*.1 + ph[k]);
+          e = Math.min(e, Math.abs(x - c) - w);
+        }
+        const riviere = e < 0;
+        h = riviere ? 5 : Math.min(h, 6 + Math.floor(e));
+        hauteurs[x*TAILLE + z] = h;
+        dist[x*TAILLE + z] = e;
+        for(let y = 0; y < h; y++){
+          let t = T.PIERRE;
+          if(y === h-1) t = riviere ? T.TERRE : T.HERBE;
+          else if(y >= h-4) t = T.TERRE;
+          blocs[idx(x, y, z)] = t;
+        }
+        if(riviere) blocs[idx(x, 5, z)] = T.EAU;
+      }
+    }
+    progres(x0 / TAILLE * .5, 'Terrain et rivières…');
+    await pause();
+  }
+
+  // arbres
+  progres(.55, 'Plantation des arbres…');
+  await pause();
+  for(let x = 3; x < TAILLE-3; x++){
+    for(let z = 3; z < TAILLE-3; z++){
+      if(dist[x*TAILLE + z] < 3 || hash(x, z, s + 7) >= .012) continue;
+      const h = hauteurs[x*TAILLE + z];
+      for(let y = h; y < h + 4; y++) blocs[idx(x, y, z)] = T.BOIS;
+      tronc[x*TAILLE + z] = 1;
+      for(let dy = 3; dy <= 6; dy++){
+        const r = dy <= 4 ? 2 : (dy === 5 ? 1 : 0);
+        for(let dx = -r; dx <= r; dx++){
+          for(let dz = -r; dz <= r; dz++){
+            if(r > 0 && Math.abs(dx) === r && Math.abs(dz) === r) continue;
+            const i = idx(x + dx, h + dy, z + dz);
+            if(blocs[i] === T.AIR) blocs[i] = T.FEUILLE;
+          }
+        }
+      }
+    }
+  }
+
+  nbBlocs = 0;
+  for(let i = 0; i < blocs.length; i++) if(blocs[i]) nbBlocs++;
+  progres(.6, 'Le monde compte ' + nbBlocs.toLocaleString('fr-FR') + ' blocs…');
+  await pause();
+}
+
+/* ---------- Affichage du monde par morceaux (chunks) ---------- */
+const CH = 20, NCH = TAILLE / CH;
+const DIRS = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+let chunks, groupeMonde, geoCube, matSolide, matEau;
+
+function construireChunk(cx, cz){
+  const solides = [], eaux = [];
+  for(let x = cx*CH; x < (cx+1)*CH; x++){
+    for(let z = cz*CH; z < (cz+1)*CH; z++){
+      for(let y = 0; y < HAUT; y++){
+        const t = blocs[idx(x, y, z)];
+        if(!t) continue;
+        if(t === T.EAU){
+          if(bloc(x, y+1, z) === T.AIR) eaux.push([x, y, z]);
+          continue;
+        }
+        if(DIRS.some(d => { const n = bloc(x+d[0], y+d[1], z+d[2]); return n === T.AIR || n === T.EAU; }))
+          solides.push([x, y, z, t]);
+      }
+    }
+  }
+  const m = new THREE.Matrix4(), c = new THREE.Color();
+  const g = new THREE.Group();
+
+  const maillage = new THREE.InstancedMesh(geoCube, matSolide, solides.length);
+  maillage.frustumCulled = false;   // sinon le monde peut disparaître selon l’angle de vue
+  solides.forEach(([x, y, z, t], i) => {
+    m.setPosition(x + .5, y + .5, z + .5);
+    maillage.setMatrixAt(i, m);
+    c.set(COULEURS[t]);
+    c.offsetHSL(0, 0, (hash(x, z + y*131, 5) - .5) * .06);
+    maillage.setColorAt(i, c);
+  });
+  maillage.instanceMatrix.needsUpdate = true;
+  if(maillage.instanceColor) maillage.instanceColor.needsUpdate = true;
+  g.add(maillage);
+
+  if(eaux.length){
+    const eau = new THREE.InstancedMesh(geoCube, matEau, eaux.length);
+    eau.frustumCulled = false;
+    eaux.forEach(([x, y, z], i) => {
+      m.setPosition(x + .5, y + .5, z + .5);
+      eau.setMatrixAt(i, m);
+    });
+    eau.instanceMatrix.needsUpdate = true;
+    g.add(eau);
+  }
+  return g;
+}
+
+function reconstruire(cx, cz){
+  if(cx < 0 || cz < 0 || cx >= NCH || cz >= NCH) return;
+  const i = cx*NCH + cz;
+  if(chunks[i]){
+    groupeMonde.remove(chunks[i]);
+    chunks[i].children.forEach(m => m.dispose && m.dispose());
+  }
+  chunks[i] = construireChunk(cx, cz);
+  groupeMonde.add(chunks[i]);
+}
+
+async function construireMonde(){
+  geoCube = new THREE.BoxGeometry(1, 1, 1);
+  matSolide = new THREE.MeshLambertMaterial({color:0xffffff});
+  matEau = new THREE.MeshLambertMaterial({color:COULEURS[T.EAU], transparent:true, opacity:.65, depthWrite:false});
+  groupeMonde = new THREE.Group();
+  chunks = new Array(NCH * NCH);
+  for(let cx = 0; cx < NCH; cx++){
+    for(let cz = 0; cz < NCH; cz++){
+      reconstruire(cx, cz);
+      progres(.6 + (cx*NCH + cz + 1) / (NCH*NCH) * .35, 'Construction des blocs visibles…');
+    }
+    await pause();
+  }
+  return groupeMonde;
+}
+
+/* ---------- Partie ---------- */
+const R = .3, HJ = 1.8, PORTEE = 6, VIE_MAX = 20;
+const SLOTS = [T.HERBE, T.TERRE, T.PIERRE, T.BOIS, T.FEUILLE];
+let renderer, scene, camera, boucle, enJeu = false, partie = null, autosave = null, contour = null, cible = null;
+let yaw = 0, pitch = 0, vy = 0, pos = {x:0, y:0, z:0};
+let vie = VIE_MAX, inv = [0,0,0,0,0], slot = 0, auSol = false, hautChute = 0;
+const touches = {};
+
+/* ----- interface (vie + inventaire) ----- */
+function construireHud(){
+  const conteneur = $('objets');
+  conteneur.innerHTML = '';
+  SLOTS.forEach((t, i) => {
+    const c = document.createElement('div');
+    c.className = 'case';
+    c.title = NOMS[t];
+    c.innerHTML = '<span class="k">' + (i+1) + '</span><b></b><span class="n"></span>';
+    c.querySelector('b').style.background = '#' + COULEURS[t].toString(16).padStart(6, '0');
+    conteneur.appendChild(c);
+  });
+}
+function majHud(){
+  $('vieRemp').style.width = (vie / VIE_MAX * 100) + '%';
+  $('vieTxt').textContent = 'Vie ' + vie + ' / ' + VIE_MAX;
+  [...$('objets').children].forEach((c, i) => {
+    c.classList.toggle('sel', i === slot);
+    c.classList.toggle('vide', inv[i] === 0);
+    c.querySelector('.n').textContent = inv[i] || '';
+  });
+}
+
+/* ----- déplacement et collisions ----- */
+function heurte(x, y, z){
+  const x0 = Math.floor(x - R), x1 = Math.floor(x + R);
+  const z0 = Math.floor(z - R), z1 = Math.floor(z + R);
+  const y0 = Math.floor(y + .001), y1 = Math.floor(y + HJ - .001);
+  for(let a = x0; a <= x1; a++){
+    for(let c = z0; c <= z1; c++){
+      if(a < 0 || c < 0 || a >= TAILLE || c >= TAILLE) return true;   // bord du monde
+      for(let b = y0; b <= y1; b++) if(plein(a, b, c)) return true;
+    }
+  }
+  return false;
+}
+
+// premier endroit où l’on peut se tenir debout (2 blocs d’air au-dessus d’un bloc plein)
+function sommet(x, z){
+  for(let y = 1; y < HAUT - 1; y++){
+    if(plein(x, y-1, z) && !plein(x, y, z) && !plein(x, y+1, z)) return y;
+  }
+  return HAUT - 1;
+}
+function pointDepart(){
+  const x = TAILLE/2 + .5;
+  let z = TAILLE/2 + .5;
+  while(tronc[Math.floor(x)*TAILLE + Math.floor(z)]) z += 1;
+  return {x, y:sommet(Math.floor(x), Math.floor(z)), z};
+}
+
+function deplacer(dx, dz){
+  if(dx){
+    const nx = pos.x + dx;
+    if(!heurte(nx, pos.y, pos.z)) pos.x = nx;
+    else if(auSol){                       // un bloc de haut maximum se franchit automatiquement
+      const ys = Math.floor(pos.y + .001) + 1;
+      if(!heurte(nx, ys, pos.z)){ pos.x = nx; pos.y = ys; }
+    }
+  }
+  if(dz){
+    const nz = pos.z + dz;
+    if(!heurte(pos.x, pos.y, nz)) pos.z = nz;
+    else if(auSol){
+      const ys = Math.floor(pos.y + .001) + 1;
+      if(!heurte(pos.x, ys, nz)){ pos.z = nz; pos.y = ys; }
+    }
+  }
+}
+
+function subirDegats(n){
+  vie = Math.max(0, vie - n);
+  if(vie <= 0){
+    vie = VIE_MAX;
+    const p = pointDepart();
+    pos.x = p.x; pos.y = p.y; pos.z = p.z;
+    vy = 0; hautChute = pos.y;
+    message('Tu as perdu toute ta vie : retour au point de départ.');
+  }
+  majHud();
+}
+
+function physiqueVerticale(dt){
+  if(auSol) hautChute = pos.y;
+  vy = Math.max(-30, vy - 25 * dt);
+  const ny = pos.y + vy * dt;
+  if(heurte(pos.x, ny, pos.z)){
+    pos.y = Math.floor(ny + .001) + 1;
+    const chute = hautChute - pos.y;
+    vy = 0; auSol = true; hautChute = pos.y;
+    if(chute > 4.01) subirDegats(Math.round((chute - 4) * 2));   // 4 blocs maximum sans dégâts
+  }else{
+    pos.y = ny; auSol = false;
+    if(pos.y > hautChute) hautChute = pos.y;
+  }
+}
+
+/* ----- viser, casser, poser ----- */
+function viser(){
+  const o = camera.position, d = new THREE.Vector3();
+  camera.getWorldDirection(d);
+  let x = Math.floor(o.x), y = Math.floor(o.y), z = Math.floor(o.z);
+  const sx = Math.sign(d.x), sy = Math.sign(d.y), sz = Math.sign(d.z);
+  const tdx = d.x ? Math.abs(1/d.x) : Infinity;
+  const tdy = d.y ? Math.abs(1/d.y) : Infinity;
+  const tdz = d.z ? Math.abs(1/d.z) : Infinity;
+  let tmx = d.x > 0 ? (x + 1 - o.x) * tdx : d.x < 0 ? (o.x - x) * tdx : Infinity;
+  let tmy = d.y > 0 ? (y + 1 - o.y) * tdy : d.y < 0 ? (o.y - y) * tdy : Infinity;
+  let tmz = d.z > 0 ? (z + 1 - o.z) * tdz : d.z < 0 ? (o.z - z) * tdz : Infinity;
+  let nx = 0, ny = 0, nz = 0, t = 0;
+  while(t <= PORTEE){
+    if(y < 0) return null;
+    if(plein(x, y, z)) return {x, y, z, nx, ny, nz};
+    if(tmx < tmy && tmx < tmz){ x += sx; t = tmx; tmx += tdx; nx = -sx; ny = 0; nz = 0; }
+    else if(tmy < tmz){ y += sy; t = tmy; tmy += tdy; nx = 0; ny = -sy; nz = 0; }
+    else { z += sz; t = tmz; tmz += tdz; nx = 0; ny = 0; nz = -sz; }
+  }
+  return null;
+}
+
+function changerBloc(x, y, z, t){
+  blocs[idx(x, y, z)] = t;
+  modifs.set(idx(x, y, z), t);
+  const cx = Math.floor(x / CH), cz = Math.floor(z / CH);
+  reconstruire(cx, cz);
+  // si le bloc touche le bord d’un morceau, le voisin doit aussi se mettre à jour
+  if(x % CH === 0) reconstruire(cx - 1, cz);
+  if(x % CH === CH - 1) reconstruire(cx + 1, cz);
+  if(z % CH === 0) reconstruire(cx, cz - 1);
+  if(z % CH === CH - 1) reconstruire(cx, cz + 1);
+}
+
+function casser(){
+  const c = cible;
+  if(!c) return;
+  const i = SLOTS.indexOf(bloc(c.x, c.y, c.z));
+  changerBloc(c.x, c.y, c.z, T.AIR);
+  if(i >= 0) inv[i]++;
+  majHud();
+}
+
+function poser(){
+  const c = cible;
+  if(!c || inv[slot] <= 0) return;
+  const x = c.x + c.nx, y = c.y + c.ny, z = c.z + c.nz;
+  if(x < 0 || z < 0 || x >= TAILLE || z >= TAILLE || y < 0 || y >= HAUT) return;
+  if(plein(x, y, z)) return;
+  // on ne peut pas poser un bloc à l’endroit où l’on se tient
+  if(pos.x + R > x && pos.x - R < x + 1 && pos.z + R > z && pos.z - R < z + 1 && pos.y + HJ > y && pos.y < y + 1) return;
+  inv[slot]--;
+  changerBloc(x, y, z, SLOTS[slot]);
+  majHud();
+}
+
+/* ----- sauvegarde ----- */
+function sauvegarder(){
+  if(!partie) return;
+  const p = lireParties();
+  p[partie.nom] = {
+    seed:partie.seed, x:pos.x, y:pos.y, z:pos.z, yaw, pitch,
+    vie, inv, slot, modifs:Array.from(modifs), date:Date.now()
+  };
+  ecrireParties(p);
+}
+
+function placerCamera(){
+  camera.position.set(pos.x, pos.y + 1.7, pos.z);
+  camera.rotation.set(pitch, yaw, 0);
+}
+
+async function lancerPartie(nom, donnees){
+  if(typeof THREE === 'undefined'){
+    erreurNom("Three.js n’a pas pu se charger. Vérifie ta connexion internet puis recharge la page.");
+    return;
+  }
+  try{
+    renderer = new THREE.WebGLRenderer({antialias:false});
+  }catch(e){
+    erreurNom("Ton navigateur n’arrive pas à activer la 3D (WebGL). Active l’accélération matérielle dans ses réglages.");
+    return;
+  }
+  erreurNom('');
+  afficher('generation');
+  progres(0, 'Préparation…');
+  await pause();
+
+  await genererMonde(donnees.seed);
+  // on remet les blocs cassés et posés lors des parties précédentes
+  modifs = new Map(donnees.modifs || []);
+  modifs.forEach((t, i) => { blocs[i] = t; });
+  const monde = await construireMonde();
+  progres(1, 'Le monde est prêt !');
+  await pause();
+
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x8ecbff);
+  scene.fog = new THREE.Fog(0x8ecbff, 30, 90);
+  scene.add(new THREE.AmbientLight(0xffffff, .65));
+  const soleil = new THREE.DirectionalLight(0xffffff, .8);
+  soleil.position.set(30, 60, 20);
+  scene.add(soleil);
+  scene.add(monde);
+
+  // contour noir autour du bloc visé
+  contour = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.005, 1.005, 1.005)),
+    new THREE.LineBasicMaterial({color:0x000000})
+  );
+  contour.visible = false;
+  scene.add(contour);
+
+  camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, .1, 250);
+  camera.rotation.order = 'YXZ';
+
+  if(donnees.x === undefined){
+    const p = pointDepart();
+    pos.x = p.x; pos.y = p.y; pos.z = p.z;
+    yaw = 0; pitch = 0;
+  }else{
+    pos.x = donnees.x; pos.y = donnees.y; pos.z = donnees.z;
+    yaw = donnees.yaw; pitch = donnees.pitch;
+  }
+  vy = 0; auSol = false; hautChute = pos.y;
+  vie = donnees.vie === undefined ? VIE_MAX : donnees.vie;
+  inv = donnees.inv ? donnees.inv.slice() : [0,0,0,0,0];
+  slot = donnees.slot || 0;
+  for(const k in touches) touches[k] = false;
+  partie = {nom, seed:donnees.seed};
+  placerCamera();
+  construireHud();
+  majHud();
+  sauvegarder();
+
+  enJeu = true;
+  $('viseur').style.display = 'block';
+  $('hud').style.display = 'flex';
+  afficher(null);
+  renderer.domElement.requestPointerLock();
+  autosave = setInterval(sauvegarder, 10000);
+
+  let dernier = performance.now();
+  const tick = now => {
+    if(!enJeu) return;
+    const dt = Math.min(.05, (now - dernier) / 1000);
+    dernier = now;
+    mettreAJour(dt);
+    cible = viser();
+    contour.visible = !!cible;
+    if(cible) contour.position.set(cible.x + .5, cible.y + .5, cible.z + .5);
+    renderer.render(scene, camera);
+    boucle = requestAnimationFrame(tick);
+  };
+  boucle = requestAnimationFrame(tick);
+}
+
+function mettreAJour(dt){
+  if(document.pointerLockElement){
+    const vitesse = 5;
+    let avant = (touches['z'] ? 1 : 0) - (touches['s'] ? 1 : 0);
+    let cote  = (touches['d'] ? 1 : 0) - (touches['q'] ? 1 : 0);
+    if(avant && cote){ avant *= .7071; cote *= .7071; }
+
+    const dx = (-Math.sin(yaw) * avant + Math.cos(yaw) * cote) * vitesse * dt;
+    const dz = (-Math.cos(yaw) * avant - Math.sin(yaw) * cote) * vitesse * dt;
+    deplacer(dx, dz);
+    physiqueVerticale(dt);
+  }
+  placerCamera();
+}
+
+function quitterPartie(){
+  enJeu = false;
+  cancelAnimationFrame(boucle);
+  clearInterval(autosave);
+  sauvegarder();
+  partie = null;
+  if(document.pointerLockElement) document.exitPointerLock();
+  if(renderer){
+    scene.traverse(o => {
+      if(o.geometry) o.geometry.dispose();
+      if(o.material) o.material.dispose();
+    });
+    renderer.dispose();
+    renderer.domElement.remove();
+    renderer = scene = camera = contour = cible = null;
+  }
+  blocs = hauteurs = tronc = chunks = groupeMonde = null;
+  $('viseur').style.display = 'none';
+  $('hud').style.display = 'none';
+  $('toast').style.display = 'none';
+}
+
+function pauseJeu(){
+  sauvegarder();
+  $('msgSauve').textContent = 'Partie « ' + partie.nom + ' » sauvegardée ✓';
+  afficher('pause');
+}
+
+/* ---------- Commandes ---------- */
+document.addEventListener('keydown', e => {
+  touches[e.key.toLowerCase()] = true;
+  if(enJeu && /^Digit[1-5]$/.test(e.code)){ slot = +e.code[5] - 1; majHud(); }
+});
+document.addEventListener('keyup',   e => { touches[e.key.toLowerCase()] = false; });
+window.addEventListener('blur', () => { for(const k in touches) touches[k] = false; });
+window.addEventListener('beforeunload', sauvegarder);
+
+document.addEventListener('mousemove', e => {
+  if(!enJeu || !document.pointerLockElement) return;
+  yaw   -= e.movementX * .0025;
+  pitch -= e.movementY * .0025;
+  pitch = Math.max(-1.5, Math.min(1.5, pitch));
+});
+
+// clic gauche : casser le bloc visé ; clic droit : poser le bloc choisi
+document.addEventListener('mousedown', e => {
+  if(!enJeu || !document.pointerLockElement) return;
+  if(e.button === 0) casser();
+  else if(e.button === 2) poser();
+});
+document.addEventListener('contextmenu', e => { if(enJeu) e.preventDefault(); });
+// molette : changer de case
+document.addEventListener('wheel', e => {
+  if(!enJeu || !document.pointerLockElement) return;
+  slot = (slot + (e.deltaY > 0 ? 1 : SLOTS.length - 1)) % SLOTS.length;
+  majHud();
+});
+
+// Échap fait quitter le verrouillage de la souris : on affiche alors la pause
+document.addEventListener('pointerlockchange', () => {
+  if(!enJeu) return;
+  if(document.pointerLockElement) afficher(null);
+  else pauseJeu();
+});
+document.addEventListener('pointerlockerror', () => { if(enJeu) pauseJeu(); });
+
+addEventListener('resize', () => {
+  if(!renderer) return;
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+/* ---------- Boutons ---------- */
+$('btnJouer').onclick = () => {
+  erreurNom('');
+  $('nomPartie').value = '';
+  remplirListe();
+  afficher('parties');
+  $('nomPartie').focus();
+};
+$('btnRetour').onclick = () => afficher('lobby');
+
+function creerPartie(){
+  const nom = $('nomPartie').value.trim();
+  if(!nom){ erreurNom('Écris un nom pour ta partie.'); return; }
+  if(lireParties()[nom]){ erreurNom('Ce nom existe déjà : choisis-en un autre ou charge-la dans la liste.'); return; }
+  lancerPartie(nom, {seed: Math.floor(Math.random() * 1e9)});
+}
+$('btnCreer').onclick = creerPartie;
+$('nomPartie').addEventListener('keydown', e => { if(e.key === 'Enter') creerPartie(); });
+
+$('btnReprendre').onclick = () => renderer.domElement.requestPointerLock();
+$('btnLobby').onclick = () => { quitterPartie(); afficher('lobby'); };
+</script>
+</body>
+</html>
