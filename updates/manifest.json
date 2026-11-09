@@ -2,13 +2,15 @@
   "product": "Astra Console",
   "version": "1.9.0",
   "channel": "stable",
+  "package": "astra-console-v1.9.0.zip",
   "download": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/Astra-Console.html",
+  "packageUrl": "https://raw.githubusercontent.com/brenmarlon46-cyber/Marlon/main/updates/astra-console-v1.9.0.zip",
   "releaseNotes": [
-    "Nouveau jeu disponible : Betrock, le monde de blocs",
-    "Betrock dans la grille Applications, dans le dossier Jeux et sur l’accueil",
-    "Douze véhicules circulent en continu sur la route de la nouvelle ville",
-    "Route des maisons prolongée et raccordée à la route principale",
-    "Point de voyage violet déplacé près de l’aéroport pour rejoindre Hotiral",
-    "Barrières renforcées avec poteaux, feux et panneaux visibles"
+    "Nouveau jeu : Betrock (monde de blocs a explorer, casser et construire)",
+    "Betrock dans la grille Applications, sur l’accueil et dans le dossier Jeux",
+    "Betrock fonctionne hors ligne avec three.min.js",
+    "Douze vehicules circulent en continu sur la route de la nouvelle ville",
+    "Route des maisons prolongee et raccordee a la route principale",
+    "Point de voyage violet deplace pres de l’aeroport pour rejoindre Hotiral"
   ]
 }
