@@ -436,6 +436,162 @@ function setupControls(){
   addEventListener('wheel',e=>{if(gameActive&&!isPaused&&!P.veh)camDist=clamp(camDist+e.deltaY*.005,2,10);});document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&gameActive&&!isPaused&&!isDead&&!mapOn&&!busRouteOpen)togglePause();});
 }
 
+
+/* ---------- Manette : navigation et conduite ---------- */
+(function(){
+  const PAD={pres:{},axes:[0,0,0,0],vu:false};
+  const pad=()=> (navigator.getGamepads?.()||[])[0];
+  const bouton=(i)=>{const p=pad();return !!(p&&p.buttons[i]&&p.buttons[i].pressed)};
+  const appui=(nom,i,fn)=>{const on=bouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on};
+  function boucle(){
+    const p=pad();
+    if(!p){requestAnimationFrame(boucle);return}
+    if(!PAD.vu){PAD.vu=true;try{notify('Manette connectée : A valider, B retour, stick pour conduire.')}catch(e){}}
+    if(typeof gameActive==='undefined'||!gameActive){
+      // menu : A lance la partie libre (ou reprend), B ne fait rien, flèches = navigation
+      appui('mA',0,()=>{$('btn-libre')?.click()});
+      appui('mHaut',12,()=>$('btn-hist')?.focus());
+      appui('mBas',13,()=>$('btn-libre')?.focus());
+      requestAnimationFrame(boucle);return;
+    }
+    appui('pause',9,()=>{isPaused?resumeGame():togglePause()});
+    appui('pause2',8,()=>togglePause());
+    appui('map',3,()=>toggleMap());
+    appui('veh',2,()=>toggleVehicle());
+    appui('action',1,()=>action());
+    const lx=p.axes[0]||0, ly=p.axes[1]||0;
+    // stick gauche : z/s pour avancer-reculer, q/d pour tourner ou se déplacer
+    K.z=ly<-.22||bouton(12); K.s=ly>.22||bouton(13);
+    K.q=lx<-.22||bouton(14); K.d=lx>.22||bouton(15);
+    K.a=bouton(4)||bouton(7);          // LB / RT : sprint
+    // stick droit : caméra
+    const rx=p.axes[2]||0, ry=p.axes[3]||0;
+    if(Math.abs(rx)>.16||Math.abs(ry)>.16){
+      camYaw-=rx*.045; camPitch=Math.max(-.6,Math.min(1.1,camPitch+ry*.035));
+      if(typeof lookOff!=='undefined')lookOff=0;
+    }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+})();
+
+
+/* ---------- Manette : navigation et conduite ---------- */
+(function(){
+  const PAD={pres:{},axes:[0,0,0,0],vu:false};
+  const pad=()=> (navigator.getGamepads?.()||[])[0];
+  const bouton=(i)=>{const p=pad();return !!(p&&p.buttons[i]&&p.buttons[i].pressed)};
+  const appui=(nom,i,fn)=>{const on=bouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on};
+  function boucle(){
+    const p=pad();
+    if(!p){requestAnimationFrame(boucle);return}
+    if(!PAD.vu){PAD.vu=true;try{notify('Manette connectée : A valider, B retour, stick pour conduire.')}catch(e){}}
+    if(typeof gameActive==='undefined'||!gameActive){
+      // menu : A lance la partie libre (ou reprend), B ne fait rien, flèches = navigation
+      appui('mA',0,()=>{$('btn-libre')?.click()});
+      appui('mHaut',12,()=>$('btn-hist')?.focus());
+      appui('mBas',13,()=>$('btn-libre')?.focus());
+      requestAnimationFrame(boucle);return;
+    }
+    appui('pause',9,()=>{isPaused?resumeGame():togglePause()});
+    appui('pause2',8,()=>togglePause());
+    appui('map',3,()=>toggleMap());
+    appui('veh',2,()=>toggleVehicle());
+    appui('action',1,()=>action());
+    const lx=p.axes[0]||0, ly=p.axes[1]||0;
+    // stick gauche : z/s pour avancer-reculer, q/d pour tourner ou se déplacer
+    K.z=ly<-.22||bouton(12); K.s=ly>.22||bouton(13);
+    K.q=lx<-.22||bouton(14); K.d=lx>.22||bouton(15);
+    K.a=bouton(4)||bouton(7);          // LB / RT : sprint
+    // stick droit : caméra
+    const rx=p.axes[2]||0, ry=p.axes[3]||0;
+    if(Math.abs(rx)>.16||Math.abs(ry)>.16){
+      camYaw-=rx*.045; camPitch=Math.max(-.6,Math.min(1.1,camPitch+ry*.035));
+      if(typeof lookOff!=='undefined')lookOff=0;
+    }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+})();
+
+
+/* ---------- Manette : navigation et conduite ---------- */
+(function(){
+  const PAD={pres:{},axes:[0,0,0,0],vu:false};
+  const pad=()=> (navigator.getGamepads?.()||[])[0];
+  const bouton=(i)=>{const p=pad();return !!(p&&p.buttons[i]&&p.buttons[i].pressed)};
+  const appui=(nom,i,fn)=>{const on=bouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on};
+  function boucle(){
+    const p=pad();
+    if(!p){requestAnimationFrame(boucle);return}
+    if(!PAD.vu){PAD.vu=true;try{notify('Manette connectée : A valider, B retour, stick pour conduire.')}catch(e){}}
+    if(typeof gameActive==='undefined'||!gameActive){
+      // menu : A lance la partie libre (ou reprend), B ne fait rien, flèches = navigation
+      appui('mA',0,()=>{$('btn-libre')?.click()});
+      appui('mHaut',12,()=>$('btn-hist')?.focus());
+      appui('mBas',13,()=>$('btn-libre')?.focus());
+      requestAnimationFrame(boucle);return;
+    }
+    appui('pause',9,()=>{isPaused?resumeGame():togglePause()});
+    appui('pause2',8,()=>togglePause());
+    appui('map',3,()=>toggleMap());
+    appui('veh',2,()=>toggleVehicle());
+    appui('action',1,()=>action());
+    const lx=p.axes[0]||0, ly=p.axes[1]||0;
+    // stick gauche : z/s pour avancer-reculer, q/d pour tourner ou se déplacer
+    K.z=ly<-.22||bouton(12); K.s=ly>.22||bouton(13);
+    K.q=lx<-.22||bouton(14); K.d=lx>.22||bouton(15);
+    K.a=bouton(4)||bouton(7);          // LB / RT : sprint
+    // stick droit : caméra
+    const rx=p.axes[2]||0, ry=p.axes[3]||0;
+    if(Math.abs(rx)>.16||Math.abs(ry)>.16){
+      camYaw-=rx*.045; camPitch=Math.max(-.6,Math.min(1.1,camPitch+ry*.035));
+      if(typeof lookOff!=='undefined')lookOff=0;
+    }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+})();
+
+
+/* ---------- Manette : navigation et conduite ---------- */
+(function(){
+  const PAD={pres:{},axes:[0,0,0,0],vu:false};
+  const pad=()=> (navigator.getGamepads?.()||[])[0];
+  const bouton=(i)=>{const p=pad();return !!(p&&p.buttons[i]&&p.buttons[i].pressed)};
+  const appui=(nom,i,fn)=>{const on=bouton(i);if(on&&!PAD.pres[nom]){try{fn()}catch(e){}}PAD.pres[nom]=on};
+  function boucle(){
+    const p=pad();
+    if(!p){requestAnimationFrame(boucle);return}
+    if(!PAD.vu){PAD.vu=true;try{notify('Manette connectée : A valider, B retour, stick pour conduire.')}catch(e){}}
+    if(typeof gameActive==='undefined'||!gameActive){
+      // menu : A lance la partie libre (ou reprend), B ne fait rien, flèches = navigation
+      appui('mA',0,()=>{$('btn-libre')?.click()});
+      appui('mHaut',12,()=>$('btn-hist')?.focus());
+      appui('mBas',13,()=>$('btn-libre')?.focus());
+      requestAnimationFrame(boucle);return;
+    }
+    appui('pause',9,()=>{isPaused?resumeGame():togglePause()});
+    appui('pause2',8,()=>togglePause());
+    appui('map',3,()=>toggleMap());
+    appui('veh',2,()=>toggleVehicle());
+    appui('action',1,()=>action());
+    const lx=p.axes[0]||0, ly=p.axes[1]||0;
+    // stick gauche : z/s pour avancer-reculer, q/d pour tourner ou se déplacer
+    K.z=ly<-.22||bouton(12); K.s=ly>.22||bouton(13);
+    K.q=lx<-.22||bouton(14); K.d=lx>.22||bouton(15);
+    K.a=bouton(4)||bouton(7);          // LB / RT : sprint
+    // stick droit : caméra
+    const rx=p.axes[2]||0, ry=p.axes[3]||0;
+    if(Math.abs(rx)>.16||Math.abs(ry)>.16){
+      camYaw-=rx*.045; camPitch=Math.max(-.6,Math.min(1.1,camPitch+ry*.035));
+      if(typeof lookOff!=='undefined')lookOff=0;
+    }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+})();
+
 /* ---------- Boucle ---------- */
 function update(dt){
   crashCD-=dt;hitCD-=dt;heistCD-=dt;limCD-=dt;
