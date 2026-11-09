@@ -518,6 +518,19 @@ function placerCamera(){
 }
 
 async function lancerPartie(nom, donnees){
+  if(!nom){
+    // ouverture directe (depuis la console) : on reprend la partie la plus récente, ou on en crée une
+    const p = lireParties(), noms = Object.keys(p);
+    if(!noms.length){
+      donnees = {seed: Math.floor(Math.random() * 1e9)};
+      nom = 'Ma partie';
+      for(let i = 2; p[nom]; i++) nom = 'Ma partie ' + i;
+    }else{
+      noms.sort((a, c) => p[c].date - p[a].date);
+      nom = noms[0];
+      donnees = p[nom];
+    }
+  }
   if(typeof THREE === 'undefined'){
     erreurNom("Three.js n’a pas pu se charger. Vérifie ta connexion internet puis recharge la page.");
     return;
@@ -588,7 +601,11 @@ async function lancerPartie(nom, donnees){
   $('viseur').style.display = 'block';
   $('hud').style.display = 'flex';
   afficher(null);
-  renderer.domElement.requestPointerLock();
+  // on ne demande le verrouillage de la souris que si la page est au premier plan :
+  // dans la console (iframe), il échouerait et afficherait la pause dès l'ouverture
+  if(window === window.top){
+    try{ renderer.domElement.requestPointerLock(); }catch(e){}
+  }
   autosave = setInterval(sauvegarder, 10000);
 
   let dernier = performance.now();
@@ -712,6 +729,15 @@ function creerPartie(){
 }
 $('btnCreer').onclick = creerPartie;
 $('nomPartie').addEventListener('keydown', e => { if(e.key === 'Enter') creerPartie(); });
+
+// lancement direct depuis la console : on saute le chargement et le lobby
+window.__astraDemarrer = () => {
+  try{
+    clearInterval(timer);
+    afficher(null);
+    lancerPartie('', {});
+  }catch(e){}
+};
 
 $('btnReprendre').onclick = () => {
   // le verrouillage de la souris ne marche que sur une action de l'utilisateur :
