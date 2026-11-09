@@ -692,7 +692,12 @@ function creerPartie(){
 $('btnCreer').onclick = creerPartie;
 $('nomPartie').addEventListener('keydown', e => { if(e.key === 'Enter') creerPartie(); });
 
-$('btnReprendre').onclick = () => renderer.domElement.requestPointerLock();
+$('btnReprendre').onclick = () => {
+  // le verrouillage de la souris ne marche que sur une action de l'utilisateur :
+  // sinon (iframe, fenêtre non active) on revient simplement au jeu
+  try{ renderer.domElement.requestPointerLock(); }catch(e){}
+  setTimeout(() => { if(!document.pointerLockElement) afficher(null); }, 600);
+};
 $('btnLobby').onclick = () => { quitterPartie(); afficher('lobby'); };
 </script>
 </body>
