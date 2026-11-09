@@ -9,14 +9,15 @@ Site de lancement pour Astra Console. Ouvrir `index.html` après publication ave
 
 1. Ouvre `Astra-Console.html` (ou `index.html`, ce sont les mêmes fichiers) et fais les modifications voulues.
 2. Enregistre le fichier, puis dépose-le sur le dépôt sous **les deux noms** : `Astra-Console.html` et `index.html`.
-3. Ouvre `updates/manifest.json` et augmente `version` (ex. `1.9.0` → `2.0.0`) en ajoutant une ligne dans `releaseNotes`.
+3. Ouvre `updates/manifest.json` et augmente `version` (ex. `1.13.0` → `1.14.0`) en ajoutant une ligne dans `releaseNotes`.
 4. Les consoles déjà installées voient alors « Nouvelle mise à jour Astra Console X.Y.Z disponible » et téléchargent `Astra-Console.html` depuis le dépôt.
 
 ## Le dossier `updates/` (pour mettre à jour les autres appareils)
 
 - `updates/manifest.json` — version courante, notes de version et liens de téléchargement lus par l'application « Mise à jour ».
-- `updates/astra-console-v1.9.0.zip` — la console complète en paquet : `index.html`, `Astra-Console.html`, `betrock.html`, `game.html`, `three.min.js`, `manifest.json`, `updates/manifest.json`, `LISEZ-MOI.txt`, `Lancer-Astra-Console.bat`.
+- `updates/astra-console-v1.13.0.zip` — la console complète en paquet : `index.html`, `Astra-Console.html`, `betrock.html`, `game.html`, `three.min.js`, `manifest.json`, `updates/manifest.json`, `LISEZ-MOI.txt`, `Lancer-Astra-Console.bat`.
 - `astra-console-v1.1.0.zip` — ancien paquet, conservé.
+- Version actuelle de la console : **1.13.0**.
 
 Pour un autre appareil : télécharge le ZIP, décompresse-le dans un dossier « Astra Console », double-clique sur `Lancer-Astra-Console.bat` (ou ouvre `index.html`). Aucune installation, aucune connexion nécessaire.
 
